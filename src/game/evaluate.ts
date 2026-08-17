@@ -32,6 +32,24 @@ export function evaluateGuess(guess: string, answer: string): LetterState[] {
   return states
 }
 
+/**
+ * Letters proven to sit at a given position, from every guess so far. These are the
+ * greens, and they seed the next row so a player never retypes what they've pinned
+ * down. Positions still unknown come back null.
+ */
+export function knownLetters(guesses: string[], answer: string, length: number): (string | null)[] {
+  const known: (string | null)[] = Array.from({ length }, () => null)
+
+  for (const guess of guesses) {
+    const evaluated = evaluateGuess(guess, answer)
+    for (let i = 0; i < evaluated.length; i++) {
+      if (evaluated[i] === 'correct') known[i] = guess[i]
+    }
+  }
+
+  return known
+}
+
 const RANK: Record<LetterState, number> = { absent: 0, present: 1, correct: 2 }
 
 /**

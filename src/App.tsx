@@ -101,23 +101,24 @@ export default function App() {
         onNewWord={game.newPracticeGame}
       />
 
-      <main className="app__board">
-        {snapshot && (
-          <Board
-            length={settings.length}
-            maxGuesses={game.maxGuesses}
-            guesses={snapshot.guesses}
-            draft={game.draft}
-            answer={snapshot.answer}
-            revealingRow={game.revealingRow}
-            shake={game.shake}
-            // Bounce only once the row has finished flipping.
-            winningRow={
-              snapshot.status === 'won' && game.revealingRow === -1 ? snapshot.guesses.length - 1 : -1
-            }
-          />
-        )}
-      </main>
+      {snapshot ? (
+        <Board
+          length={settings.length}
+          rows={game.rows}
+          guesses={snapshot.guesses}
+          draft={game.draft}
+          greens={game.greens}
+          answer={snapshot.answer}
+          revealingRow={game.revealingRow}
+          shake={game.shake}
+          // Bounce only once the row has finished flipping.
+          winningRow={
+            snapshot.status === 'won' && game.revealingRow === -1 ? snapshot.guesses.length - 1 : -1
+          }
+        />
+      ) : (
+        <div className="app__loading" />
+      )}
 
       <div className="app__keyboard">
         <Keyboard keyStates={game.keyStates} onKey={press} disabled={game.loading || finished} />
@@ -125,7 +126,12 @@ export default function App() {
 
       <Toast message={game.toast} />
 
-      <HelpModal open={helpOpen} length={settings.length} onClose={() => setHelpOpen(false)} />
+      <HelpModal
+        open={helpOpen}
+        mode={settings.mode}
+        length={settings.length}
+        onClose={() => setHelpOpen(false)}
+      />
 
       <SettingsModal
         open={settingsOpen}

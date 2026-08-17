@@ -7,14 +7,10 @@
   margin: 0 auto;
 }
 
-/* min-height:0 lets the board shrink instead of pushing the keyboard off screen. */
-.app__board {
+/* Holds the board's place while its dictionary loads, so the keyboard doesn't jump. */
+.app__loading {
   flex: 1;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 8px;
 }
 
 .app__keyboard {

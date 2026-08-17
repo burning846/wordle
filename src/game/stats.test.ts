@@ -15,7 +15,7 @@ Object.defineProperty(globalThis, 'window', {
   writable: true,
 })
 
-const { loadStats, recordResult, winPercentage } = await import('./stats.ts')
+const { averageGuesses, loadStats, recordResult, winPercentage } = await import('./stats.ts')
 
 beforeEach(() => store.clear())
 
@@ -72,6 +72,25 @@ test('practice games accumulate without a day index', () => {
   const stats = recordResult('practice', 5, { won: true, guessCount: 2, dayIndex: null })
   assert.equal(stats.played, 2)
   assert.equal(stats.currentStreak, 2)
+})
+
+test('practice tracks best and average instead of a streak', () => {
+  recordResult('practice', 5, { won: true, guessCount: 3, dayIndex: null })
+  const stats = recordResult('practice', 5, { won: true, guessCount: 6, dayIndex: null })
+  assert.equal(stats.best, 3)
+  assert.equal(averageGuesses(stats), 4.5)
+})
+
+test('practice has an overflow bucket for slow wins', () => {
+  // 5 letters gives buckets 1-6 plus a 7th meaning "seven or more".
+  const stats = recordResult('practice', 5, { won: true, guessCount: 11, dayIndex: null })
+  assert.equal(stats.distribution.length, 7)
+  assert.deepEqual(stats.distribution, [0, 0, 0, 0, 0, 0, 1])
+  assert.equal(stats.best, 11)
+})
+
+test('daily has no overflow bucket', () => {
+  assert.equal(loadStats('daily', 5).distribution.length, 6)
 })
 
 test('each length keeps its own stats', () => {

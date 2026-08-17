@@ -1,6 +1,6 @@
 import { evaluateGuess } from './evaluate.ts'
 import { puzzleNumber } from './daily.ts'
-import { maxGuessesFor, type GameMode, type GameStatus, type LetterState, type WordLength } from './types.ts'
+import { guessLimitFor, type GameMode, type GameStatus, type LetterState, type WordLength } from './types.ts'
 
 const TILES: Record<LetterState, string> = { correct: '🟩', present: '🟨', absent: '⬛' }
 const TILES_HIGH_CONTRAST: Record<LetterState, string> = { correct: '🟧', present: '🟦', absent: '⬛' }
@@ -19,13 +19,15 @@ export interface ShareInput {
 /** The emoji grid, spoiler-free: colours only, never letters. */
 export function buildShareText(input: ShareInput): string {
   const tiles = input.highContrast ? TILES_HIGH_CONTRAST : TILES
-  const score = input.status === 'won' ? input.guesses.length : 'X'
-  const title =
-    input.mode === 'daily' && input.dayIndex !== null
-      ? `Wordle ${puzzleNumber(input.dayIndex)}`
-      : `Wordle ${input.length}-letter practice`
+  const hard = input.hardMode ? '*' : ''
 
-  const heading = `${title} ${score}/${maxGuessesFor(input.length)}${input.hardMode ? '*' : ''}`
+  // Practice has no guess limit, so "n/6" would be meaningless there.
+  const heading =
+    input.dayIndex === null
+      ? `Wordle practice · ${input.length} letters · ${input.guesses.length} guesses${hard}`
+      : `Wordle ${puzzleNumber(input.dayIndex)} ${
+          input.status === 'won' ? input.guesses.length : 'X'
+        }/${guessLimitFor(input.length)}${hard}`
   const grid = input.guesses.map((guess) =>
     evaluateGuess(guess, input.answer)
       .map((state) => tiles[state])

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { formatCountdown, msUntilNextPuzzle } from '../game/daily.ts'
 import { buildShareText, copyToClipboard } from '../game/share.ts'
-import { winPercentage, type Stats } from '../game/stats.ts'
+import { averageGuesses, winPercentage, type Stats } from '../game/stats.ts'
 import type { GameMode, GameSnapshot, WordLength } from '../game/types.ts'
 import { Modal } from './Modal.tsx'
 import './StatsModal.css'
@@ -64,11 +64,22 @@ export function StatsModal({
         </p>
       )}
 
+      {/* Practice can't be lost, so a win rate and streaks would always read 100% and
+          "every game so far". Guess counts are the only meaningful measure there. */}
       <div className="stats__figures">
         <Figure value={stats.played} label="Played" />
-        <Figure value={winPercentage(stats)} label="Win %" />
-        <Figure value={stats.currentStreak} label="Current streak" />
-        <Figure value={stats.maxStreak} label="Max streak" />
+        {mode === 'daily' ? (
+          <>
+            <Figure value={winPercentage(stats)} label="Win %" />
+            <Figure value={stats.currentStreak} label="Current streak" />
+            <Figure value={stats.maxStreak} label="Max streak" />
+          </>
+        ) : (
+          <>
+            <Figure value={stats.best ?? 0} label="Best" />
+            <Figure value={averageGuesses(stats)} label="Average" />
+          </>
+        )}
       </div>
 
       <h3 className="stats__heading">Guess distribution</h3>
@@ -78,7 +89,11 @@ export function StatsModal({
         <div className="distribution">
           {stats.distribution.map((count, index) => (
             <div className="distribution__row" key={index}>
-              <span className="distribution__label">{index + 1}</span>
+              {/* Practice's final bucket collects everything slower than it. */}
+              <span className="distribution__label">
+                {index + 1}
+                {mode === 'practice' && index === stats.distribution.length - 1 ? '+' : ''}
+              </span>
               <div className="distribution__track">
                 <div
                   className={`distribution__bar${index + 1 === currentBucket ? ' is-current' : ''}`}

@@ -1,19 +1,29 @@
+/* Scrolls only once a growing practice board runs out of room. `margin: auto` on the
+   board centres it without clipping the top when it does overflow, which
+   `align-items: center` would. */
+.board-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 8px;
+  scrollbar-width: thin;
+}
+
 .board {
-  /* --cols / --rows are set inline from the current word length. */
-  display: grid;
-  grid-template-rows: repeat(var(--rows), 1fr);
-  /* Cells stay exactly square: the aspect ratio matches the cell count and the
-     gaps come from tile margins rather than grid gap, which would skew it. */
-  aspect-ratio: var(--cols) / var(--rows);
-  height: 100%;
-  max-height: 100%;
-  max-width: 100%;
-  container-type: size;
+  /* --cols and --tile are set inline; --tile is measured against the space available. */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: auto;
 }
 
 .row {
   display: grid;
-  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-columns: repeat(var(--cols), var(--tile));
+  grid-auto-rows: var(--tile);
+  gap: 5px;
 }
 
 .tile {
@@ -21,14 +31,13 @@
   --tile-fg: var(--color-text);
   --tile-border: var(--color-tile-empty);
 
-  margin: 2.5px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--tile-border);
   background: var(--tile-bg);
   color: var(--tile-fg);
-  font-size: clamp(0.95rem, calc(46cqh / var(--rows)), 2.1rem);
+  font-size: calc(var(--tile, 62px) * 0.5);
   font-weight: 700;
   line-height: 1;
   text-transform: uppercase;
@@ -38,6 +47,13 @@
 .tile--filled {
   --tile-border: var(--color-tile-filled);
   animation: pop 100ms ease-out;
+}
+
+/* A letter carried over from an earlier green: outlined, not filled, so the row
+   still reads as unsubmitted. */
+.tile--hint {
+  --tile-border: var(--color-correct);
+  --tile-fg: var(--color-correct);
 }
 
 .tile--correct {

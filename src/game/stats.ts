@@ -1,5 +1,5 @@
 import { readJson, writeJson } from './storage.ts'
-import { maxGuessesFor, type GameMode, type WordLength } from './types.ts'
+import { guessLimitFor, type GameMode, type WordLength } from './types.ts'
 
 export interface Stats {
   played: number
@@ -8,6 +8,10 @@ export interface Stats {
   maxStreak: number
   /** distribution[i] counts wins that took i + 1 guesses. */
   distribution: number[]
+  /** Guesses summed over every win, so an average can be shown. */
+  totalGuesses: number
+  /** Fewest guesses in a win. */
+  best: number | null
   /** Day index of the last recorded daily result, used to detect a broken streak. */
   lastDayIndex: number | null
 }
@@ -17,20 +21,30 @@ function key(mode: GameMode, length: WordLength): string {
   return `wordle:stats:${mode}:${length}`
 }
 
-function empty(length: WordLength): Stats {
+/**
+ * Practice has no guess ceiling, so it carries one extra bucket that collects every
+ * win slower than the daily limit.
+ */
+export function distributionSize(mode: GameMode, length: WordLength): number {
+  return guessLimitFor(length) + (mode === 'practice' ? 1 : 0)
+}
+
+function empty(mode: GameMode, length: WordLength): Stats {
   return {
     played: 0,
     won: 0,
     currentStreak: 0,
     maxStreak: 0,
-    distribution: Array.from({ length: maxGuessesFor(length) }, () => 0),
+    distribution: Array.from({ length: distributionSize(mode, length) }, () => 0),
+    totalGuesses: 0,
+    best: null,
     lastDayIndex: null,
   }
 }
 
 export function loadStats(mode: GameMode, length: WordLength): Stats {
   const stored = readJson<Partial<Stats>>(key(mode, length))
-  const base = empty(length)
+  const base = empty(mode, length)
   if (!stored) return base
 
   return {
@@ -38,8 +52,10 @@ export function loadStats(mode: GameMode, length: WordLength): Stats {
     won: stored.won ?? 0,
     currentStreak: stored.currentStreak ?? 0,
     maxStreak: stored.maxStreak ?? 0,
-    // Resize rather than trust the stored length, in case max guesses ever change.
+    // Resized rather than trusted, in case the bucket count has changed since.
     distribution: base.distribution.map((_, index) => stored.distribution?.[index] ?? 0),
+    totalGuesses: stored.totalGuesses ?? 0,
+    best: stored.best ?? null,
     lastDayIndex: stored.lastDayIndex ?? null,
   }
 }
@@ -69,8 +85,9 @@ export function recordResult(mode: GameMode, length: WordLength, result: Result)
 
   const distribution = [...previous.distribution]
   if (result.won) {
-    const bucket = result.guessCount - 1
-    if (bucket >= 0 && bucket < distribution.length) distribution[bucket] += 1
+    // Wins past the last bucket land in it: that bucket means "this many or more".
+    const bucket = Math.min(result.guessCount, distribution.length) - 1
+    if (bucket >= 0) distribution[bucket] += 1
   }
 
   const next: Stats = {
@@ -79,6 +96,8 @@ export function recordResult(mode: GameMode, length: WordLength, result: Result)
     currentStreak,
     maxStreak: Math.max(previous.maxStreak, currentStreak),
     distribution,
+    totalGuesses: previous.totalGuesses + (result.won ? result.guessCount : 0),
+    best: result.won ? Math.min(previous.best ?? Infinity, result.guessCount) : previous.best,
     lastDayIndex: result.dayIndex ?? previous.lastDayIndex,
   }
 
@@ -88,4 +107,9 @@ export function recordResult(mode: GameMode, length: WordLength, result: Result)
 
 export function winPercentage(stats: Stats): number {
   return stats.played === 0 ? 0 : Math.round((stats.won / stats.played) * 100)
+}
+
+/** Mean guesses per win, to one decimal. Zero when nothing has been won yet. */
+export function averageGuesses(stats: Stats): number {
+  return stats.won === 0 ? 0 : Math.round((stats.totalGuesses / stats.won) * 10) / 10
 }

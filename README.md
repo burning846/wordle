@@ -15,10 +15,18 @@ npm run build    # typecheck + production build into dist/
 ## Gameplay
 
 - **Daily** — one word per calendar day, the same for everyone, rolling over at local midnight.
-  Progress is saved, so a refresh resumes the board.
-- **Practice** — a fresh random word whenever you want one.
-- **Word length** — 4 to 7 letters, selectable in the toolbar. You get `length + 1` guesses, so
-  the classic 5-letter game gives 6 tries. Each length keeps its own statistics.
+  You get `length + 1` guesses, so the classic 5-letter game gives 6 tries. Progress is saved, so a
+  refresh resumes the board.
+- **Practice** — a fresh random word whenever you want one, with no guess limit: a wrong guess
+  simply adds another row. The board starts at the daily height and grows, shrinking its tiles to
+  fit and scrolling once they reach their minimum size.
+- **Green letters carry forward** — a letter proven to be in the right place is filled into your
+  next guess automatically, outlined rather than filled so the row still reads as unsubmitted.
+  Backspace undoes entries newest-first, so a carried-over letter only clears once nothing typed
+  after it remains.
+- **Word length** — 4 to 7 letters, selectable in the toolbar. Each length and mode keeps its own
+  statistics: daily tracks win rate and streaks, while practice — which can't be lost — tracks
+  your best and average guess count instead.
 - **Hard mode** — every revealed hint has to be reused in later guesses. Only switchable between
   rounds.
 - **High contrast** — orange/blue tiles instead of green/yellow.

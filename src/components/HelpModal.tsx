@@ -1,9 +1,10 @@
-import { maxGuessesFor, type LetterState, type WordLength } from '../game/types.ts'
+import { guessLimitFor, type GameMode, type LetterState, type WordLength } from '../game/types.ts'
 import { Modal } from './Modal.tsx'
 import './HelpModal.css'
 
 interface HelpModalProps {
   open: boolean
+  mode: GameMode
   length: WordLength
   onClose: () => void
 }
@@ -22,12 +23,15 @@ const EXAMPLES: Example[] = [
   { word: 'vague', index: 3, state: 'absent', caption: 'U is not in the word at all.' },
 ]
 
-export function HelpModal({ open, length, onClose }: HelpModalProps) {
+export function HelpModal({ open, mode, length, onClose }: HelpModalProps) {
   return (
     <Modal open={open} title="How to play" onClose={onClose}>
       <p className="help__lead">
-        Guess the word in {maxGuessesFor(length)} tries. Each guess must be a valid {length}-letter
-        word. The colour of the tiles shows how close you were.
+        {mode === 'daily'
+          ? `Guess the word in ${guessLimitFor(length)} tries.`
+          : 'Guess the word in as many tries as you need.'}{' '}
+        Each guess must be a valid {length}-letter word. The colour of the tiles shows how close you
+        were.
       </p>
 
       <div className="help__examples">
@@ -50,8 +54,13 @@ export function HelpModal({ open, length, onClose }: HelpModalProps) {
 
       <ul className="help__notes">
         <li>
-          <strong>Daily</strong> is the same word for everyone on a given date. <strong>Practice</strong>{' '}
-          gives you a fresh random word whenever you want one.
+          A green letter is carried into your next guess automatically, outlined rather than filled.
+          Backspace clears it if you'd rather try something else there.
+        </li>
+        <li>
+          <strong>Daily</strong> is the same word for everyone on a given date, with{' '}
+          {guessLimitFor(length)} tries. <strong>Practice</strong> gives you a fresh random word and
+          no limit — a wrong guess just adds another row.
         </li>
         <li>Word length is switchable from 4 to 7 letters — each length keeps its own stats.</li>
         <li>
