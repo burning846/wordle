@@ -1,0 +1,32 @@
+.toast-layer {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: 4px;
+  background: var(--color-toast);
+  color: var(--color-toast-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  animation: toast-in 180ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

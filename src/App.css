@@ -1,0 +1,23 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  /* dvh so the board isn't hidden behind mobile browser chrome. */
+  height: 100dvh;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* min-height:0 lets the board shrink instead of pushing the keyboard off screen. */
+.app__board {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+}
+
+.app__keyboard {
+  flex: none;
+  padding: 4px 0 10px;
+}

@@ -1,0 +1,48 @@
+.help__lead {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.help__examples {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.help__example p {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Fixed-size tiles: the examples are illustrations, not a playable board. */
+.example-row {
+  display: flex;
+  gap: 4px;
+}
+
+.example-row .tile {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.help__notes {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.help__notes strong {
+  color: var(--color-text);
+}

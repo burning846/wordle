@@ -1,0 +1,74 @@
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+.keyboard__row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+/* Half-key indents on the middle row, the way a real keyboard staggers. */
+.keyboard__row:nth-child(2) {
+  padding: 0 5%;
+}
+
+.key {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--color-key);
+  color: var(--color-key-text);
+  font-family: inherit;
+  font-size: clamp(0.7rem, 3.4vw, 0.85rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  touch-action: manipulation;
+}
+
+.key:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.key:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.key:disabled {
+  cursor: default;
+}
+
+.key--wide {
+  flex: 1.6;
+}
+
+.key--correct {
+  background: var(--color-correct);
+  color: var(--color-on-state);
+}
+
+.key--present {
+  background: var(--color-present);
+  color: var(--color-on-state);
+}
+
+.key--absent {
+  background: var(--color-absent);
+  color: var(--color-on-state);
+}
+
+@media (max-height: 700px) {
+  .key {
+    height: 44px;
+  }
+}
