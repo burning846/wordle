@@ -1,3 +1,4 @@
+import { DEFAULT_DIFFICULTY, isDifficulty, type Difficulty } from './difficulty.ts'
 import { readJson, writeJson } from './storage.ts'
 import { DEFAULT_LENGTH, isWordLength, type GameMode, type WordLength } from './types.ts'
 
@@ -6,6 +7,8 @@ export type Theme = 'light' | 'dark'
 export interface Settings {
   mode: GameMode
   length: WordLength
+  /** Practice only: how far down the everyday-usage ranking answers are drawn from. */
+  difficulty: Difficulty
   /** Revealed hints must be reused in every later guess. */
   hardMode: boolean
   theme: Theme
@@ -25,6 +28,7 @@ export function loadSettings(): Settings {
   return {
     mode: stored?.mode === 'practice' ? 'practice' : 'daily',
     length: isWordLength(stored?.length) ? stored.length : DEFAULT_LENGTH,
+    difficulty: isDifficulty(stored?.difficulty) ? stored.difficulty : DEFAULT_DIFFICULTY,
     hardMode: stored?.hardMode === true,
     theme: stored?.theme === 'dark' || stored?.theme === 'light' ? stored.theme : systemTheme(),
     highContrast: stored?.highContrast === true,

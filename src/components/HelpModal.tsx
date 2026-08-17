@@ -62,6 +62,11 @@ export function HelpModal({ open, mode, length, onClose }: HelpModalProps) {
           {guessLimitFor(length)} tries. <strong>Practice</strong> gives you a fresh random word and
           no limit — a wrong guess just adds another row.
         </li>
+        <li>
+          Practice <strong>difficulty</strong> is graded by how common a word is in everyday use:
+          Easy draws from the most common third of the pool, Hard from the least common third. Each
+          tier keeps its own record.
+        </li>
         <li>Word length is switchable from 4 to 7 letters — each length keeps its own stats.</li>
         <li>
           <strong>Hard mode</strong> (in settings) forces every revealed hint into your later guesses.

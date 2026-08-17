@@ -17,10 +17,15 @@ Object.defineProperty(globalThis, 'window', {
 
 const { averageGuesses, loadStats, recordResult, winPercentage } = await import('./stats.ts')
 
+const daily = (length: 4 | 5 | 6 | 7 = 5) =>
+  ({ mode: 'daily', length, difficulty: 'medium' }) as const
+const practice = (difficulty: 'easy' | 'medium' | 'hard' = 'medium') =>
+  ({ mode: 'practice', length: 5, difficulty }) as const
+
 beforeEach(() => store.clear())
 
 test('a fresh player has zeroed stats sized to the guess count', () => {
-  const stats = loadStats('daily', 5)
+  const stats = loadStats(daily(5))
   assert.equal(stats.played, 0)
   assert.equal(stats.currentStreak, 0)
   assert.equal(stats.distribution.length, 6)
@@ -28,30 +33,30 @@ test('a fresh player has zeroed stats sized to the guess count', () => {
 })
 
 test('a win lands in the right distribution bucket', () => {
-  const stats = recordResult('daily', 5, { won: true, guessCount: 3, dayIndex: 10 })
+  const stats = recordResult(daily(), { won: true, guessCount: 3, dayIndex: 10 })
   assert.deepEqual(stats.distribution, [0, 0, 1, 0, 0, 0])
   assert.equal(stats.played, 1)
   assert.equal(winPercentage(stats), 100)
 })
 
 test('consecutive days extend the streak', () => {
-  recordResult('daily', 5, { won: true, guessCount: 4, dayIndex: 10 })
-  const stats = recordResult('daily', 5, { won: true, guessCount: 2, dayIndex: 11 })
+  recordResult(daily(), { won: true, guessCount: 4, dayIndex: 10 })
+  const stats = recordResult(daily(), { won: true, guessCount: 2, dayIndex: 11 })
   assert.equal(stats.currentStreak, 2)
   assert.equal(stats.maxStreak, 2)
 })
 
 test('a skipped day restarts the streak at one', () => {
-  recordResult('daily', 5, { won: true, guessCount: 4, dayIndex: 10 })
-  recordResult('daily', 5, { won: true, guessCount: 4, dayIndex: 11 })
-  const stats = recordResult('daily', 5, { won: true, guessCount: 4, dayIndex: 20 })
+  recordResult(daily(), { won: true, guessCount: 4, dayIndex: 10 })
+  recordResult(daily(), { won: true, guessCount: 4, dayIndex: 11 })
+  const stats = recordResult(daily(), { won: true, guessCount: 4, dayIndex: 20 })
   assert.equal(stats.currentStreak, 1)
   assert.equal(stats.maxStreak, 2)
 })
 
 test('a loss clears the streak but keeps the record', () => {
-  recordResult('daily', 5, { won: true, guessCount: 4, dayIndex: 10 })
-  const stats = recordResult('daily', 5, { won: false, guessCount: 6, dayIndex: 11 })
+  recordResult(daily(), { won: true, guessCount: 4, dayIndex: 10 })
+  const stats = recordResult(daily(), { won: false, guessCount: 6, dayIndex: 11 })
   assert.equal(stats.currentStreak, 0)
   assert.equal(stats.maxStreak, 1)
   assert.equal(stats.played, 2)
@@ -60,41 +65,41 @@ test('a loss clears the streak but keeps the record', () => {
 
 test('the same daily puzzle is never counted twice', () => {
   // Two tabs finishing the same day would otherwise double the totals.
-  recordResult('daily', 5, { won: true, guessCount: 3, dayIndex: 10 })
-  const stats = recordResult('daily', 5, { won: true, guessCount: 3, dayIndex: 10 })
+  recordResult(daily(), { won: true, guessCount: 3, dayIndex: 10 })
+  const stats = recordResult(daily(), { won: true, guessCount: 3, dayIndex: 10 })
   assert.equal(stats.played, 1)
   assert.equal(stats.currentStreak, 1)
   assert.deepEqual(stats.distribution, [0, 0, 1, 0, 0, 0])
 })
 
 test('practice games accumulate without a day index', () => {
-  recordResult('practice', 5, { won: true, guessCount: 2, dayIndex: null })
-  const stats = recordResult('practice', 5, { won: true, guessCount: 2, dayIndex: null })
+  recordResult(practice(), { won: true, guessCount: 2, dayIndex: null })
+  const stats = recordResult(practice(), { won: true, guessCount: 2, dayIndex: null })
   assert.equal(stats.played, 2)
   assert.equal(stats.currentStreak, 2)
 })
 
 test('practice tracks best and average instead of a streak', () => {
-  recordResult('practice', 5, { won: true, guessCount: 3, dayIndex: null })
-  const stats = recordResult('practice', 5, { won: true, guessCount: 6, dayIndex: null })
+  recordResult(practice(), { won: true, guessCount: 3, dayIndex: null })
+  const stats = recordResult(practice(), { won: true, guessCount: 6, dayIndex: null })
   assert.equal(stats.best, 3)
   assert.equal(averageGuesses(stats), 4.5)
 })
 
 test('practice has an overflow bucket for slow wins', () => {
   // 5 letters gives buckets 1-6 plus a 7th meaning "seven or more".
-  const stats = recordResult('practice', 5, { won: true, guessCount: 11, dayIndex: null })
+  const stats = recordResult(practice(), { won: true, guessCount: 11, dayIndex: null })
   assert.equal(stats.distribution.length, 7)
   assert.deepEqual(stats.distribution, [0, 0, 0, 0, 0, 0, 1])
   assert.equal(stats.best, 11)
 })
 
 test('daily has no overflow bucket', () => {
-  assert.equal(loadStats('daily', 5).distribution.length, 6)
+  assert.equal(loadStats(daily(5)).distribution.length, 6)
 })
 
 test('each length keeps its own stats', () => {
-  recordResult('daily', 5, { won: true, guessCount: 3, dayIndex: 10 })
-  assert.equal(loadStats('daily', 7).played, 0)
-  assert.equal(loadStats('daily', 7).distribution.length, 8)
+  recordResult(daily(), { won: true, guessCount: 3, dayIndex: 10 })
+  assert.equal(loadStats(daily(7)).played, 0)
+  assert.equal(loadStats(daily(7)).distribution.length, 8)
 })

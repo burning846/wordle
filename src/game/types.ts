@@ -1,3 +1,5 @@
+import type { Difficulty } from './difficulty.ts'
+
 /** Colour a tile ends up in once its guess is revealed. */
 export type LetterState = 'correct' | 'present' | 'absent'
 
@@ -46,6 +48,29 @@ export function rowsFor(
   return Math.max(base, guessCount + (finished ? 0 : 1))
 }
 
+/**
+ * Identifies one puzzle stream. Games and statistics are stored per puzzle, so a
+ * 7-letter hard practice run keeps its own progress and its own record.
+ */
+export interface Puzzle {
+  mode: GameMode
+  length: WordLength
+  /** Only meaningful for practice; the daily word is drawn from the whole pool. */
+  difficulty: Difficulty
+}
+
+export function samePuzzle(a: Puzzle, b: Puzzle): boolean {
+  if (a.mode !== b.mode || a.length !== b.length) return false
+  return a.mode === 'daily' || a.difficulty === b.difficulty
+}
+
+/** Storage key fragment. Daily leaves difficulty out, since it doesn't apply. */
+export function puzzleKey(puzzle: Puzzle): string {
+  return puzzle.mode === 'daily'
+    ? `daily:${puzzle.length}`
+    : `practice:${puzzle.length}:${puzzle.difficulty}`
+}
+
 export interface GameSnapshot {
   answer: string
   guesses: string[]
@@ -53,11 +78,10 @@ export interface GameSnapshot {
   /** Days since the daily epoch, or null in practice mode. */
   dayIndex: number | null
   /**
-   * Which board this belongs to. Redundant with its storage key, but it makes the
-   * snapshot self-identifying: switching mode or length re-runs the save effect while
-   * the previous game is still in state, and without this the old board would be
-   * written over the new key.
+   * The puzzle this belongs to. Redundant with its storage key, but it makes the
+   * snapshot self-identifying: switching puzzle re-runs the save effect while the
+   * previous game is still in state, and without this the old game would be written
+   * over the new key.
    */
-  mode: GameMode
-  length: WordLength
+  puzzle: Puzzle
 }

@@ -10,38 +10,39 @@ import {
   typeIntoDraft,
   type Draft,
 } from '../game/draft.ts'
+import { poolFor } from '../game/difficulty.ts'
 import { hardModeViolation, keyboardStates, knownLetters } from '../game/evaluate.ts'
 import { loadStats, recordResult, type Stats } from '../game/stats.ts'
 import { readJson, removeKey, writeJson } from '../game/storage.ts'
 import {
   limitFor,
+  puzzleKey,
   rowsFor,
-  type GameMode,
+  samePuzzle,
+  type Puzzle,
   type GameSnapshot,
   type LetterState,
-  type WordLength,
 } from '../game/types.ts'
 
 const WIN_MESSAGES = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Phew', 'Nice']
 const TOAST_MS = 1800
 
-function gameKey(mode: GameMode, length: WordLength): string {
-  return `wordle:game:${mode}:${length}`
+function gameKey(puzzle: Puzzle): string {
+  return `wordle:game:${puzzleKey(puzzle)}`
 }
 
 /** Guards against a stored game from an older build or a hand-edited value. */
 function isPlayable(
   snapshot: GameSnapshot | null,
   dictionary: Dictionary,
-  mode: GameMode,
-  length: WordLength,
+  puzzle: Puzzle,
   limit: number | null,
 ): snapshot is GameSnapshot {
   if (!snapshot) return false
   const { answer, guesses, status } = snapshot
   return (
-    snapshot.mode === mode &&
-    snapshot.length === length &&
+    snapshot.puzzle !== undefined &&
+    samePuzzle(snapshot.puzzle, puzzle) &&
     typeof answer === 'string' &&
     answer.length === dictionary.length &&
     Array.isArray(guesses) &&
@@ -51,32 +52,31 @@ function isPlayable(
   )
 }
 
-function startGame(dictionary: Dictionary, mode: GameMode, length: WordLength): GameSnapshot {
-  const stored = readJson<GameSnapshot>(gameKey(mode, length))
-  const limit = limitFor(mode, length)
+function startGame(dictionary: Dictionary, puzzle: Puzzle): GameSnapshot {
+  const stored = readJson<GameSnapshot>(gameKey(puzzle))
+  const limit = limitFor(puzzle.mode, puzzle.length)
 
-  if (mode === 'daily') {
+  if (puzzle.mode === 'daily') {
     const dayIndex = dayIndexFor()
     const answer = dailyAnswer(dictionary, dayIndex)
     // Resume only the puzzle for today; yesterday's board is gone.
     if (
-      isPlayable(stored, dictionary, mode, length, limit) &&
+      isPlayable(stored, dictionary, puzzle, limit) &&
       stored.dayIndex === dayIndex &&
       stored.answer === answer
     ) {
       return stored
     }
-    return { answer, guesses: [], status: 'playing', dayIndex, mode, length }
+    return { answer, guesses: [], status: 'playing', dayIndex, puzzle }
   }
 
-  if (isPlayable(stored, dictionary, mode, length, limit)) return stored
+  if (isPlayable(stored, dictionary, puzzle, limit)) return stored
   return {
-    answer: randomAnswer(dictionary),
+    answer: randomAnswer(poolFor(dictionary.ranked, puzzle.difficulty)),
     guesses: [],
     status: 'playing',
     dayIndex: null,
-    mode,
-    length,
+    puzzle,
   }
 }
 
@@ -88,8 +88,7 @@ export interface Shake {
 const NO_SHAKE: Shake = { row: -1, token: 0 }
 
 export interface GameOptions {
-  mode: GameMode
-  length: WordLength
+  puzzle: Puzzle
   hardMode: boolean
 }
 
@@ -117,13 +116,15 @@ export interface Game {
   notify: (message: string) => void
 }
 
-export function useGame({ mode, length, hardMode }: GameOptions): Game {
+export function useGame({ puzzle, hardMode }: GameOptions): Game {
+  const { mode, length } = puzzle
+
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null)
   const [draft, setDraft] = useState<Draft>(() => emptyDraft(length))
   const [revealingRow, setRevealingRow] = useState(-1)
   const [shake, setShake] = useState<Shake>(NO_SHAKE)
   const [toast, setToast] = useState<string | null>(null)
-  const [stats, setStats] = useState<Stats>(() => loadStats(mode, length))
+  const [stats, setStats] = useState<Stats>(() => loadStats(puzzle))
   const [resultOpen, setResultOpen] = useState(false)
 
   const dictionaryRef = useRef<Dictionary | null>(null)
@@ -178,12 +179,12 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
     setRevealingRow(-1)
     setShake(NO_SHAKE)
     setResultOpen(false)
-    setStats(loadStats(mode, length))
+    setStats(loadStats(puzzle))
 
     void loadDictionary(length).then((dictionary) => {
       if (cancelled) return
       dictionaryRef.current = dictionary
-      const started = startGame(dictionary, mode, length)
+      const started = startGame(dictionary, puzzle)
       setSnapshot(started)
       // A resumed game re-seeds its row, so greens survive a refresh.
       setDraftTo(seededDraft(started))
@@ -193,7 +194,7 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
       cancelled = true
       window.clearTimeout(revealTimer.current)
     }
-  }, [mode, length, seededDraft, setDraftTo])
+  }, [puzzle, length, seededDraft, setDraftTo])
 
   useEffect(() => {
     // Mirrored for the rollover check below, which runs from timers and listeners
@@ -201,10 +202,10 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
     snapshotRef.current = snapshot
     // The identity check matters on a mode or length switch: this effect re-runs with
     // the previous game still in state, which would otherwise clobber the new key.
-    if (snapshot && snapshot.mode === mode && snapshot.length === length) {
-      writeJson(gameKey(mode, length), snapshot)
+    if (snapshot && samePuzzle(snapshot.puzzle, puzzle)) {
+      writeJson(gameKey(puzzle), snapshot)
     }
-  }, [snapshot, mode, length])
+  }, [snapshot, puzzle])
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), [])
 
@@ -218,11 +219,11 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
       const dictionary = dictionaryRef.current
       const current = snapshotRef.current
       // Ignore a snapshot still belonging to the board we just switched away from.
-      if (!dictionary || current?.mode !== mode || current.length !== length) return
+      if (!dictionary || !current || !samePuzzle(current.puzzle, puzzle)) return
       if (current.dayIndex === dayIndexFor()) return
 
-      removeKey(gameKey(mode, length))
-      setSnapshot(startGame(dictionary, mode, length))
+      removeKey(gameKey(puzzle))
+      setSnapshot(startGame(dictionary, puzzle))
       setDraftTo(emptyDraft(length))
       setRevealingRow(-1)
       setShake(NO_SHAKE)
@@ -251,7 +252,7 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
       document.removeEventListener('visibilitychange', check)
       window.removeEventListener('focus', check)
     }
-  }, [length, mode, setDraftTo])
+  }, [length, mode, puzzle, setDraftTo])
 
   const submit = useCallback(() => {
     const dictionary = dictionaryRef.current
@@ -279,7 +280,7 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
 
     // Recorded here rather than in an effect so a resumed finished game is never counted twice.
     if (status !== 'playing') {
-      setStats(recordResult(mode, length, { won, guessCount: guesses.length, dayIndex: snapshot.dayIndex }))
+      setStats(recordResult(puzzle, { won, guessCount: guesses.length, dayIndex: snapshot.dayIndex }))
     }
 
     // Hold the verdict until the tiles have finished flipping.
@@ -292,7 +293,7 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
       else if (status === 'lost') notify(snapshot.answer.toUpperCase())
       if (status !== 'playing') setResultOpen(true)
     }, revealDurationFor(length))
-  }, [hardMode, length, limit, mode, notify, reject, revealingRow, seededDraft, setDraftTo, snapshot])
+  }, [puzzle, hardMode, length, limit, notify, reject, revealingRow, seededDraft, setDraftTo, snapshot])
 
   const press = useCallback(
     (key: string) => {
@@ -313,20 +314,19 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
     if (!dictionary) return
 
     window.clearTimeout(revealTimer.current)
-    removeKey(gameKey('practice', length))
+    removeKey(gameKey(puzzle))
     setSnapshot({
-      answer: randomAnswer(dictionary),
+      answer: randomAnswer(poolFor(dictionary.ranked, puzzle.difficulty)),
       guesses: [],
       status: 'playing',
       dayIndex: null,
-      mode: 'practice',
-      length,
+      puzzle,
     })
     setDraftTo(emptyDraft(length))
     setRevealingRow(-1)
     setShake(NO_SHAKE)
     setResultOpen(false)
-  }, [length, setDraftTo])
+  }, [puzzle, length, setDraftTo])
 
   // The flipping row keeps its keys uncoloured until the reveal lands.
   const revealed = useMemo(() => {

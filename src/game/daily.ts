@@ -29,21 +29,22 @@ export function dayIndexFor(date: Date = new Date()): number {
 }
 
 /** Human-facing puzzle number. */
-export function puzzleNumber(dayIndex: number): number {
+export function dailyNumber(dayIndex: number): number {
   return dayIndex + 1
 }
 
 /**
- * The word for a given day. Answer lists are shuffled at build time, so walking
- * them in order gives an unpredictable sequence, and the modulo keeps the game
+ * The word for a given day. The daily order is a seeded shuffle of the answer pool,
+ * so walking it gives an unpredictable sequence, and the modulo keeps the game
  * playable past the end of the list.
  */
 export function dailyAnswer(dictionary: Dictionary, dayIndex: number): string {
-  return dictionary.answers[dayIndex % dictionary.answers.length]
+  return dictionary.daily[dayIndex % dictionary.daily.length]
 }
 
-export function randomAnswer(dictionary: Dictionary): string {
-  return dictionary.answers[Math.floor(Math.random() * dictionary.answers.length)]
+/** Practice draws from whichever difficulty tier is selected. */
+export function randomAnswer(pool: string[]): string {
+  return pool[Math.floor(Math.random() * pool.length)]
 }
 
 export function msUntilNextPuzzle(now: Date = new Date()): number {

@@ -1,9 +1,12 @@
+import { shuffled } from './shuffle.ts'
 import type { WordLength } from './types.ts'
 
 export interface Dictionary {
   length: WordLength
-  /** Puzzle answers, pre-shuffled at build time — index n is day n's word. */
-  answers: string[]
+  /** Answers ordered by descending everyday usage — the difficulty ranking. */
+  ranked: string[]
+  /** The same words in the fixed daily order, so day n is everyone's day n. */
+  daily: string[]
   /** Everything accepted as a guess, answers included. */
   guesses: Set<string>
 }
@@ -34,13 +37,15 @@ export function loadDictionary(length: WordLength): Promise<Dictionary> {
   if (cached) return cached
 
   const pending = SOURCES[length]().then(([rawAnswers, rawGuesses]) => {
-    const answers = split(rawAnswers)
+    const ranked = split(rawAnswers)
     const dictionary: Dictionary = {
       length,
-      answers,
+      ranked,
+      // A distinct seed per length keeps the daily sequences uncorrelated.
+      daily: shuffled(ranked, 0x5eed + length),
       // Answers are already a subset of the dictionary, but union them anyway so
       // a regenerated list can never reject a word the game itself might pick.
-      guesses: new Set([...split(rawGuesses), ...answers]),
+      guesses: new Set([...split(rawGuesses), ...ranked]),
     }
     return dictionary
   })

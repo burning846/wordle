@@ -1,5 +1,5 @@
 import { evaluateGuess } from './evaluate.ts'
-import { puzzleNumber } from './daily.ts'
+import { dailyNumber } from './daily.ts'
 import { guessLimitFor, type GameMode, type GameStatus, type LetterState, type WordLength } from './types.ts'
 
 const TILES: Record<LetterState, string> = { correct: '🟩', present: '🟨', absent: '⬛' }
@@ -25,7 +25,7 @@ export function buildShareText(input: ShareInput): string {
   const heading =
     input.dayIndex === null
       ? `Wordle practice · ${input.length} letters · ${input.guesses.length} guesses${hard}`
-      : `Wordle ${puzzleNumber(input.dayIndex)} ${
+      : `Wordle ${dailyNumber(input.dayIndex)} ${
           input.status === 'won' ? input.guesses.length : 'X'
         }/${guessLimitFor(input.length)}${hard}`
   const grid = input.guesses.map((guess) =>

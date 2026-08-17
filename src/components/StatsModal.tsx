@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { formatCountdown, msUntilNextPuzzle } from '../game/daily.ts'
 import { buildShareText, copyToClipboard } from '../game/share.ts'
+import { DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.ts'
 import { averageGuesses, winPercentage, type Stats } from '../game/stats.ts'
 import type { GameMode, GameSnapshot, WordLength } from '../game/types.ts'
 import { Modal } from './Modal.tsx'
@@ -13,6 +14,7 @@ interface StatsModalProps {
   snapshot: GameSnapshot | null
   mode: GameMode
   length: WordLength
+  difficulty: Difficulty
   hardMode: boolean
   highContrast: boolean
   onNewWord: () => void
@@ -26,6 +28,7 @@ export function StatsModal({
   snapshot,
   mode,
   length,
+  difficulty,
   hardMode,
   highContrast,
   onNewWord,
@@ -84,7 +87,10 @@ export function StatsModal({
 
       <h3 className="stats__heading">Guess distribution</h3>
       {stats.won === 0 ? (
-        <p className="stats__empty">No wins recorded for {length}-letter {mode} yet.</p>
+        <p className="stats__empty">
+          No wins recorded for {length}-letter{' '}
+          {mode === 'practice' ? `${DIFFICULTY_LABELS[difficulty].toLowerCase()} practice` : mode} yet.
+        </p>
       ) : (
         <div className="distribution">
           {stats.distribution.map((count, index) => (

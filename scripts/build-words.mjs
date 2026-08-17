@@ -6,8 +6,9 @@
  *   answers-N.txt — the far smaller pool a puzzle answer is drawn from, i.e. the
  *                   dictionary intersected with a frequency list so answers stay fair
  *
- * Answers are shuffled with a fixed seed so the daily sequence is stable across
- * machines and rebuilds, and so day 1 isn't simply the most common word in English.
+ * answers-N.txt is ordered by everyday usage, most common word first. That order is
+ * what practice mode's difficulty tiers slice up, and the daily sequence shuffles it
+ * at runtime with a fixed seed — so this one file drives both.
  *
  * Run with: npm run words
  */
@@ -15,6 +16,9 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import wordListPath from 'word-list'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DATA_DIR = resolve(ROOT, 'src/data')
@@ -28,13 +32,24 @@ const FREQUENCY_URL =
   'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa-no-swears.txt'
 
 /**
- * The frequency list is web-corpus derived, so it carries a handful of entries
- * that are real words but poor puzzle answers (jargon, units, netspeak).
+ * SCOWL size buckets, smallest first. Sizes up to 35 are the everyday vocabulary;
+ * beyond that the lists reach into proper nouns, brands and technical jargon.
+ *
+ * The frequency list is web-corpus derived, so without this an answer pool drawn
+ * from it offers up "texas", "linux", "anime" and "devel". Requiring a word to also
+ * appear in the common buckets removes about a hundred such entries per length.
+ * American spelling lists are unioned in so "color" and "honor" survive; every
+ * excluded word is still accepted as a *guess*, it just can't be the answer.
  */
-const ANSWER_BLOCKLIST = new Set([
-  'http', 'html', 'jpeg', 'aspx', 'blogs', 'urls', 'faqs', 'pdfs', 'isbn',
-  'kbps', 'mbps', 'ghz', 'php', 'asin', 'href', 'ebay', 'aol', 'msn',
-])
+const COMMON_SIZES = [10, 20, 35]
+
+function commonVocabulary() {
+  const words = COMMON_SIZES.flatMap((size) => [
+    ...require(`wordlist-english/english-words-${size}.json`),
+    ...require(`wordlist-english/american-words-${size}.json`),
+  ])
+  return new Set(words.map((word) => word.toLowerCase()))
+}
 
 async function frequencyList() {
   if (existsSync(CACHE)) return readFileSync(CACHE, 'utf8')
@@ -46,27 +61,6 @@ async function frequencyList() {
   return text
 }
 
-/** mulberry32 — small seeded PRNG, keeps the shuffle reproducible. */
-function rng(seed) {
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0
-    let t = seed
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-function shuffled(words, seed) {
-  const out = [...words]
-  const random = rng(seed)
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
-  }
-  return out
-}
-
 const lines = (text) =>
   text
     .split('\n')
@@ -75,6 +69,7 @@ const lines = (text) =>
 
 const dictionary = new Set(lines(readFileSync(wordListPath, 'utf8')))
 const frequency = lines(await frequencyList())
+const common = commonVocabulary()
 
 mkdirSync(DATA_DIR, { recursive: true })
 
@@ -82,10 +77,9 @@ for (const length of LENGTHS) {
   const alphabetic = (word) => word.length === length && /^[a-z]+$/.test(word)
 
   const guesses = [...dictionary].filter(alphabetic).sort()
-  const answers = shuffled(
-    frequency.filter((word) => alphabetic(word) && dictionary.has(word) && !ANSWER_BLOCKLIST.has(word)),
-    // Distinct seed per length so the lists aren't correlated.
-    0x5eed + length,
+  // Frequency order is preserved: it is the difficulty ranking.
+  const answers = frequency.filter(
+    (word) => alphabetic(word) && dictionary.has(word) && common.has(word),
   )
 
   if (answers.length === 0) throw new Error(`no answers found for length ${length}`)
@@ -93,5 +87,12 @@ for (const length of LENGTHS) {
   writeFileSync(resolve(DATA_DIR, `guesses-${length}.txt`), guesses.join('\n') + '\n')
   writeFileSync(resolve(DATA_DIR, `answers-${length}.txt`), answers.join('\n') + '\n')
 
-  console.log(`length ${length}: ${guesses.length} guesses, ${answers.length} answers`)
+  const tier = Math.ceil(answers.length / 3)
+  const rejected = frequency.filter(
+    (word) => alphabetic(word) && dictionary.has(word) && !common.has(word),
+  ).length
+  console.log(
+    `length ${length}: ${guesses.length} guesses, ${answers.length} answers ` +
+      `(${tier} per difficulty tier, ${rejected} rejected as uncommon)`,
+  )
 }

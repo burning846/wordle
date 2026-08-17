@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, puzzleNumber } from './daily.ts'
+import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, dailyNumber } from './daily.ts'
 import type { Dictionary } from './dictionary.ts'
 
 const dictionary: Dictionary = {
   length: 5,
-  answers: ['crane', 'slate', 'audio'],
+  ranked: ['crane', 'slate', 'audio'],
+  // dailyAnswer walks this order, so keep it explicit rather than shuffled here.
+  daily: ['crane', 'slate', 'audio'],
   guesses: new Set(['crane', 'slate', 'audio']),
 }
 
 test('the epoch is puzzle 1', () => {
   assert.equal(dayIndexFor(new Date(2026, 0, 1)), 0)
-  assert.equal(puzzleNumber(dayIndexFor(new Date(2026, 0, 1))), 1)
+  assert.equal(dailyNumber(dayIndexFor(new Date(2026, 0, 1))), 1)
 })
 
 test('day index advances one per calendar day', () => {

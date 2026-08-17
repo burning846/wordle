@@ -20,12 +20,16 @@ npm run build    # typecheck + production build into dist/
 - **Practice** — a fresh random word whenever you want one, with no guess limit: a wrong guess
   simply adds another row. The board starts at the daily height and grows, shrinking its tiles to
   fit and scrolling once they reach their minimum size.
+- **Difficulty** (practice only) — graded by how common a word is in everyday use. The answer pool
+  is frequency-ranked, and Easy, Medium and Hard take equal thirds of it, most common first. Daily
+  keeps drawing from the whole pool, since it has to be the same word for everyone. Each tier keeps
+  its own in-progress board and its own record.
 - **Green letters carry forward** — a letter proven to be in the right place is filled into your
   next guess automatically, outlined rather than filled so the row still reads as unsubmitted.
   Backspace undoes entries newest-first, so a carried-over letter only clears once nothing typed
   after it remains.
-- **Word length** — 4 to 7 letters, selectable in the toolbar. Each length and mode keeps its own
-  statistics: daily tracks win rate and streaks, while practice — which can't be lost — tracks
+- **Word length** — 4 to 7 letters, selectable in the toolbar. Statistics are kept per mode, length
+  and difficulty: daily tracks win rate and streaks, while practice — which can't be lost — tracks
   your best and average guess count instead.
 - **Hard mode** — every revealed hint has to be reused in later guesses. Only switchable between
   rounds.
@@ -37,18 +41,24 @@ Statistics, settings, and in-progress boards live in `localStorage`, keyed by mo
 
 `src/data/` holds the committed word lists — two files per length:
 
-| File            | Contents                                                        |
-| --------------- | --------------------------------------------------------------- |
-| `guesses-N.txt` | every word accepted as a guess (12,578 at five letters)         |
-| `answers-N.txt` | the pool puzzle answers are drawn from (1,209 at five letters)  |
+| File            | Contents                                                       |
+| --------------- | -------------------------------------------------------------- |
+| `guesses-N.txt` | every word accepted as a guess (12,578 at five letters)        |
+| `answers-N.txt` | the pool answers are drawn from (1,103 at five letters)        |
 
 Guesses come from the SCOWL dictionary shipped in the `word-list` package. Answers are that
-dictionary intersected with a frequency-ranked list, so the target word is always something a
-player has plausibly seen, while obscure-but-real words are still accepted as guesses.
+dictionary intersected with a frequency-ranked list, so the target is always something a player has
+plausibly seen, while obscure-but-real words are still accepted as guesses.
 
-Answer lists are shuffled at generation time with a fixed seed. That keeps the daily sequence
-identical on every machine without needing a server, and stops day 1 from simply being the most
-common word in English.
+The frequency list is web-corpus derived, so answers are additionally required to appear in SCOWL's
+common-vocabulary buckets (sizes 10-35, via `wordlist-english`). Without that the pool offers up
+`texas`, `linux`, `anime` and `devel`; about a hundred such entries per length are excluded — as
+answers only, never as guesses.
+
+`answers-N.txt` is ordered by everyday usage, most common word first. That single ordering does
+double duty: practice difficulty slices it into thirds, and the daily sequence is a seeded shuffle
+of it computed at runtime (`src/game/shuffle.ts`). Changing that seed or the shuffle re-orders every
+future daily puzzle, so both are fixed now that the game is live.
 
 To regenerate (only needed when changing lengths or sources):
 

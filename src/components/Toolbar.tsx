@@ -1,3 +1,4 @@
+import { DIFFICULTIES, DIFFICULTY_HINTS, DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.ts'
 import { MODE_LABELS } from '../game/settings.ts'
 import { WORD_LENGTHS, type GameMode, type WordLength } from '../game/types.ts'
 import './Toolbar.css'
@@ -5,12 +6,22 @@ import './Toolbar.css'
 interface ToolbarProps {
   mode: GameMode
   length: WordLength
+  difficulty: Difficulty
   onModeChange: (mode: GameMode) => void
   onLengthChange: (length: WordLength) => void
+  onDifficultyChange: (difficulty: Difficulty) => void
   onNewWord: () => void
 }
 
-export function Toolbar({ mode, length, onModeChange, onLengthChange, onNewWord }: ToolbarProps) {
+export function Toolbar({
+  mode,
+  length,
+  difficulty,
+  onModeChange,
+  onLengthChange,
+  onDifficultyChange,
+  onNewWord,
+}: ToolbarProps) {
   return (
     <div className="toolbar">
       <div className="segmented" role="group" aria-label="Game mode">
@@ -42,10 +53,29 @@ export function Toolbar({ mode, length, onModeChange, onLengthChange, onNewWord 
         ))}
       </div>
 
+      {/* Difficulty only means something in practice: the daily word is the same for
+          everyone, drawn from the whole pool. */}
       {mode === 'practice' && (
-        <button type="button" className="toolbar__action" onClick={onNewWord}>
-          New word
-        </button>
+        <>
+          <div className="segmented" role="group" aria-label="Difficulty">
+            {DIFFICULTIES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`segmented__option${value === difficulty ? ' is-active' : ''}`}
+                aria-pressed={value === difficulty}
+                title={DIFFICULTY_HINTS[value]}
+                onClick={() => onDifficultyChange(value)}
+              >
+                {DIFFICULTY_LABELS[value]}
+              </button>
+            ))}
+          </div>
+
+          <button type="button" className="toolbar__action" onClick={onNewWord}>
+            New word
+          </button>
+        </>
       )}
     </div>
   )

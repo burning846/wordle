@@ -26,6 +26,7 @@
     "oxlint": "^1.75.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
-    "word-list": "^4.1.0"
+    "word-list": "^4.1.0",
+    "wordlist-english": "^1.2.1"
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Board } from './components/Board.tsx'
 import { Header } from './components/Header.tsx'
 import { HelpModal } from './components/HelpModal.tsx'
@@ -7,10 +7,11 @@ import { SettingsModal } from './components/SettingsModal.tsx'
 import { StatsModal } from './components/StatsModal.tsx'
 import { Toast } from './components/Toast.tsx'
 import { Toolbar } from './components/Toolbar.tsx'
-import { dayIndexFor, puzzleNumber } from './game/daily.ts'
+import { dayIndexFor, dailyNumber } from './game/daily.ts'
+import { DIFFICULTY_LABELS, type Difficulty } from './game/difficulty.ts'
 import { loadSettings, saveSettings, type Settings } from './game/settings.ts'
 import { readJson, writeJson } from './game/storage.ts'
-import type { GameMode, WordLength } from './game/types.ts'
+import type { GameMode, Puzzle, WordLength } from './game/types.ts'
 import { useGame } from './hooks/useGame.ts'
 import './App.css'
 
@@ -21,11 +22,13 @@ export default function App() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const game = useGame({
-    mode: settings.mode,
-    length: settings.length,
-    hardMode: settings.hardMode,
-  })
+  // Memoised so the hook's effects key off the board's contents, not its identity.
+  const puzzle = useMemo<Puzzle>(
+    () => ({ mode: settings.mode, length: settings.length, difficulty: settings.difficulty }),
+    [settings.mode, settings.length, settings.difficulty],
+  )
+
+  const game = useGame({ puzzle, hardMode: settings.hardMode })
 
   const { press, snapshot, resultOpen } = game
 
@@ -76,8 +79,8 @@ export default function App() {
 
   const subtitle = [
     settings.mode === 'daily'
-      ? `Puzzle #${puzzleNumber(snapshot?.dayIndex ?? dayIndexFor())}`
-      : 'Practice',
+      ? `Puzzle #${dailyNumber(snapshot?.dayIndex ?? dayIndexFor())}`
+      : `Practice · ${DIFFICULTY_LABELS[settings.difficulty]}`,
     `${settings.length} letters`,
     settings.hardMode && 'hard',
   ]
@@ -97,7 +100,9 @@ export default function App() {
         mode={settings.mode}
         length={settings.length}
         onModeChange={(mode: GameMode) => updateSettings({ mode })}
+        difficulty={settings.difficulty}
         onLengthChange={(length: WordLength) => updateSettings({ length })}
+        onDifficultyChange={(difficulty: Difficulty) => updateSettings({ difficulty })}
         onNewWord={game.newPracticeGame}
       />
 
@@ -149,6 +154,7 @@ export default function App() {
         snapshot={snapshot}
         mode={settings.mode}
         length={settings.length}
+        difficulty={settings.difficulty}
         hardMode={settings.hardMode}
         highContrast={settings.highContrast}
         onNewWord={game.newPracticeGame}

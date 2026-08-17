@@ -1,5 +1,5 @@
 import { readJson, writeJson } from './storage.ts'
-import { guessLimitFor, type GameMode, type WordLength } from './types.ts'
+import { guessLimitFor, puzzleKey, type Puzzle } from './types.ts'
 
 export interface Stats {
   played: number
@@ -16,35 +16,35 @@ export interface Stats {
   lastDayIndex: number | null
 }
 
-/** Stats are tracked per mode and per length — a 7-letter streak is its own thing. */
-function key(mode: GameMode, length: WordLength): string {
-  return `wordle:stats:${mode}:${length}`
+/** One record per puzzle: a 7-letter streak and a hard-practice average are separate things. */
+function key(puzzle: Puzzle): string {
+  return `wordle:stats:${puzzleKey(puzzle)}`
 }
 
 /**
  * Practice has no guess ceiling, so it carries one extra bucket that collects every
  * win slower than the daily limit.
  */
-export function distributionSize(mode: GameMode, length: WordLength): number {
-  return guessLimitFor(length) + (mode === 'practice' ? 1 : 0)
+export function distributionSize(puzzle: Puzzle): number {
+  return guessLimitFor(puzzle.length) + (puzzle.mode === 'practice' ? 1 : 0)
 }
 
-function empty(mode: GameMode, length: WordLength): Stats {
+function empty(puzzle: Puzzle): Stats {
   return {
     played: 0,
     won: 0,
     currentStreak: 0,
     maxStreak: 0,
-    distribution: Array.from({ length: distributionSize(mode, length) }, () => 0),
+    distribution: Array.from({ length: distributionSize(puzzle) }, () => 0),
     totalGuesses: 0,
     best: null,
     lastDayIndex: null,
   }
 }
 
-export function loadStats(mode: GameMode, length: WordLength): Stats {
-  const stored = readJson<Partial<Stats>>(key(mode, length))
-  const base = empty(mode, length)
+export function loadStats(puzzle: Puzzle): Stats {
+  const stored = readJson<Partial<Stats>>(key(puzzle))
+  const base = empty(puzzle)
   if (!stored) return base
 
   return {
@@ -68,8 +68,8 @@ export interface Result {
   dayIndex: number | null
 }
 
-export function recordResult(mode: GameMode, length: WordLength, result: Result): Stats {
-  const previous = loadStats(mode, length)
+export function recordResult(puzzle: Puzzle, result: Result): Stats {
+  const previous = loadStats(puzzle)
 
   // Each daily puzzle counts once. Two tabs open on the same day would otherwise both
   // record it, inflating the totals and resetting the streak against itself.
@@ -101,7 +101,7 @@ export function recordResult(mode: GameMode, length: WordLength, result: Result)
     lastDayIndex: result.dayIndex ?? previous.lastDayIndex,
   }
 
-  writeJson(key(mode, length), next)
+  writeJson(key(puzzle), next)
   return next
 }
 
