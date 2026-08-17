@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "node --test \"src/**/*.test.ts\"",
+    "test": "TZ=America/Los_Angeles node --test \"src/**/*.test.ts\"",
     "words": "node scripts/build-words.mjs",
     "lint": "oxlint",
     "preview": "vite preview"

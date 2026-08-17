@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { revealDurationFor } from '../game/animation'
-import { dailyAnswer, dayIndexFor, randomAnswer } from '../game/daily'
-import { loadDictionary, type Dictionary } from '../game/dictionary'
-import { hardModeViolation, keyboardStates } from '../game/evaluate'
-import { loadStats, recordResult, type Stats } from '../game/stats'
-import { readJson, removeKey, writeJson } from '../game/storage'
+import { revealDurationFor } from '../game/animation.ts'
+import { dailyAnswer, dayIndexFor, msUntilNextPuzzle, randomAnswer } from '../game/daily.ts'
+import { loadDictionary, type Dictionary } from '../game/dictionary.ts'
+import { hardModeViolation, keyboardStates } from '../game/evaluate.ts'
+import { loadStats, recordResult, type Stats } from '../game/stats.ts'
+import { readJson, removeKey, writeJson } from '../game/storage.ts'
 import {
   maxGuessesFor,
   type GameMode,
   type GameSnapshot,
   type LetterState,
   type WordLength,
-} from '../game/types'
+} from '../game/types.ts'
 
 const WIN_MESSAGES = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Phew', 'Nice']
 const TOAST_MS = 1800
@@ -95,6 +95,7 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
   const [resultOpen, setResultOpen] = useState(false)
 
   const dictionaryRef = useRef<Dictionary | null>(null)
+  const snapshotRef = useRef<GameSnapshot | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
   const revealTimer = useRef<number | undefined>(undefined)
 
@@ -148,9 +149,12 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
       cancelled = true
       window.clearTimeout(revealTimer.current)
     }
-  }, [mode, length])
+  }, [mode, length, setDraftTo])
 
   useEffect(() => {
+    // Mirrored for the rollover check below, which runs from timers and listeners
+    // rather than from a render.
+    snapshotRef.current = snapshot
     if (snapshot) writeJson(gameKey(mode, length), snapshot)
   }, [snapshot, mode, length])
 
@@ -160,27 +164,44 @@ export function useGame({ mode, length, hardMode }: GameOptions): Game {
   useEffect(() => {
     if (mode !== 'daily') return
 
+    let rollover: number | undefined
+
     const check = () => {
       const dictionary = dictionaryRef.current
-      if (!dictionary || document.hidden) return
-      setSnapshot((current) => {
-        if (!current || current.dayIndex === dayIndexFor()) return current
-        removeKey(gameKey(mode, length))
-        setDraftTo('')
-        setRevealingRow(-1)
-        setShake(NO_SHAKE)
-        setResultOpen(false)
-        return startGame(dictionary, mode, length)
-      })
+      const current = snapshotRef.current
+      if (!dictionary || !current || current.dayIndex === dayIndexFor()) return
+
+      removeKey(gameKey(mode, length))
+      setSnapshot(startGame(dictionary, mode, length))
+      setDraftTo('')
+      setRevealingRow(-1)
+      setShake(NO_SHAKE)
+      setResultOpen(false)
     }
 
+    /**
+     * A timer covers the tab that simply stays open past midnight, since neither
+     * `focus` nor `visibilitychange` fires then. The listeners still matter: a
+     * sleeping machine won't have run the timer on time.
+     */
+    const schedule = () => {
+      // A second of slack so the clock has definitely crossed over.
+      rollover = window.setTimeout(() => {
+        check()
+        schedule()
+      }, msUntilNextPuzzle() + 1000)
+    }
+
+    schedule()
     document.addEventListener('visibilitychange', check)
     window.addEventListener('focus', check)
+
     return () => {
+      window.clearTimeout(rollover)
       document.removeEventListener('visibilitychange', check)
       window.removeEventListener('focus', check)
     }
-  }, [mode, length])
+  }, [mode, length, setDraftTo])
 
   const submit = useCallback(() => {
     const dictionary = dictionaryRef.current

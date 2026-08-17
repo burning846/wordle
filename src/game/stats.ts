@@ -1,5 +1,5 @@
-import { readJson, writeJson } from './storage'
-import { maxGuessesFor, type GameMode, type WordLength } from './types'
+import { readJson, writeJson } from './storage.ts'
+import { maxGuessesFor, type GameMode, type WordLength } from './types.ts'
 
 export interface Stats {
   played: number
@@ -54,6 +54,10 @@ export interface Result {
 
 export function recordResult(mode: GameMode, length: WordLength, result: Result): Stats {
   const previous = loadStats(mode, length)
+
+  // Each daily puzzle counts once. Two tabs open on the same day would otherwise both
+  // record it, inflating the totals and resetting the streak against itself.
+  if (result.dayIndex !== null && result.dayIndex === previous.lastDayIndex) return previous
 
   // A daily win only extends the streak if it lands the day after the last one.
   const continues =

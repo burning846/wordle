@@ -1,5 +1,5 @@
-import { maxGuessesFor, type LetterState, type WordLength } from '../game/types'
-import { Modal } from './Modal'
+import { maxGuessesFor, type LetterState, type WordLength } from '../game/types.ts'
+import { Modal } from './Modal.tsx'
 import './HelpModal.css'
 
 interface HelpModalProps {

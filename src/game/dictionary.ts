@@ -1,4 +1,4 @@
-import type { WordLength } from './types'
+import type { WordLength } from './types.ts'
 
 export interface Dictionary {
   length: WordLength

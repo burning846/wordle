@@ -1,5 +1,5 @@
-import { MODE_LABELS } from '../game/settings'
-import { WORD_LENGTHS, type GameMode, type WordLength } from '../game/types'
+import { MODE_LABELS } from '../game/settings.ts'
+import { WORD_LENGTHS, type GameMode, type WordLength } from '../game/types.ts'
 import './Toolbar.css'
 
 interface ToolbarProps {

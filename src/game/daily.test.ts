@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { dailyAnswer, dayIndexFor, formatCountdown, puzzleNumber } from './daily.ts'
+import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, puzzleNumber } from './daily.ts'
 import type { Dictionary } from './dictionary.ts'
 
 const dictionary: Dictionary = {
@@ -41,4 +41,16 @@ test('answers cycle once the list runs out', () => {
 test('countdown is zero padded', () => {
   assert.equal(formatCountdown(0), '00:00:00')
   assert.equal(formatCountdown(3 * 3600_000 + 4 * 60_000 + 5_000), '03:04:05')
+})
+
+test('the countdown ends at the next local midnight', () => {
+  const noon = new Date(2026, 5, 10, 12, 0, 0)
+  assert.equal(noon.getTime() + msUntilNextPuzzle(noon), new Date(2026, 5, 11).getTime())
+})
+
+test('the countdown follows daylight saving, not a flat 24 hours', () => {
+  // Spring forward and fall back in the America/Los_Angeles zone the tests run in:
+  // those local days are 23 and 25 hours long, so a fixed +24h would miss midnight.
+  assert.equal(msUntilNextPuzzle(new Date(2026, 2, 8)), 23 * 3600_000)
+  assert.equal(msUntilNextPuzzle(new Date(2026, 10, 1)), 25 * 3600_000)
 })

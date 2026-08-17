@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { formatCountdown, msUntilNextPuzzle } from '../game/daily'
-import { buildShareText, copyToClipboard } from '../game/share'
-import { winPercentage, type Stats } from '../game/stats'
-import type { GameMode, GameSnapshot, WordLength } from '../game/types'
-import { Modal } from './Modal'
+import { formatCountdown, msUntilNextPuzzle } from '../game/daily.ts'
+import { buildShareText, copyToClipboard } from '../game/share.ts'
+import { winPercentage, type Stats } from '../game/stats.ts'
+import type { GameMode, GameSnapshot, WordLength } from '../game/types.ts'
+import { Modal } from './Modal.tsx'
 import './StatsModal.css'
 
 interface StatsModalProps {

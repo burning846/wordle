@@ -1,5 +1,5 @@
-import type { Settings } from '../game/settings'
-import { Modal } from './Modal'
+import type { Settings } from '../game/settings.ts'
+import { Modal } from './Modal.tsx'
 import './SettingsModal.css'
 
 interface SettingsModalProps {

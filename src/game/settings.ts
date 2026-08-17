@@ -1,5 +1,5 @@
-import { readJson, writeJson } from './storage'
-import { DEFAULT_LENGTH, isWordLength, type GameMode, type WordLength } from './types'
+import { readJson, writeJson } from './storage.ts'
+import { DEFAULT_LENGTH, isWordLength, type GameMode, type WordLength } from './types.ts'
 
 export type Theme = 'light' | 'dark'
 

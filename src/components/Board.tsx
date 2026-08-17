@@ -1,7 +1,7 @@
-import { FLIP_MS, REVEAL_STEP_MS } from '../game/animation'
-import { evaluateGuess } from '../game/evaluate'
-import type { Shake } from '../hooks/useGame'
-import type { LetterState, WordLength } from '../game/types'
+import { FLIP_MS, REVEAL_STEP_MS } from '../game/animation.ts'
+import { evaluateGuess } from '../game/evaluate.ts'
+import type { Shake } from '../hooks/useGame.ts'
+import type { LetterState, WordLength } from '../game/types.ts'
 import './Board.css'
 
 interface BoardProps {

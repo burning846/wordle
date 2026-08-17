@@ -1,4 +1,4 @@
-import type { Dictionary } from './dictionary'
+import type { Dictionary } from './dictionary.ts'
 
 /**
  * Day 1 of the daily puzzle. Everything is computed in the player's local time,
@@ -12,7 +12,18 @@ function midnight(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
 }
 
-/** Days elapsed since the epoch; 0 on launch day. */
+/**
+ * Built from the calendar date rather than by adding 24 hours: a daylight-saving
+ * transition makes the local day 23 or 25 hours long.
+ */
+function nextMidnight(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime()
+}
+
+/**
+ * Days elapsed since the epoch; 0 on launch day. Rounded rather than floored, so a
+ * 23- or 25-hour daylight-saving day still counts as exactly one day.
+ */
 export function dayIndexFor(date: Date = new Date()): number {
   return Math.max(0, Math.round((midnight(date) - midnight(EPOCH)) / DAY_MS))
 }
@@ -36,7 +47,7 @@ export function randomAnswer(dictionary: Dictionary): string {
 }
 
 export function msUntilNextPuzzle(now: Date = new Date()): number {
-  return midnight(now) + DAY_MS - now.getTime()
+  return nextMidnight(now) - now.getTime()
 }
 
 export function formatCountdown(ms: number): string {
