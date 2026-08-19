@@ -58,7 +58,7 @@ function startGame(dictionary: Dictionary, puzzle: Puzzle): GameSnapshot {
 
   if (puzzle.mode === 'daily') {
     const dayIndex = dayIndexFor()
-    const answer = dailyAnswer(dictionary, dayIndex)
+    const answer = dailyAnswer(dictionary.daily, dayIndex)
     // Resume only the puzzle for today; yesterday's board is gone.
     if (
       isPlayable(stored, dictionary, puzzle, limit) &&

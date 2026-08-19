@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 .vercel
+.env
+.env.*
+!.env.example
 
 # Downloaded frequency list; the generated word data in src/data is committed.
 scripts/.cache

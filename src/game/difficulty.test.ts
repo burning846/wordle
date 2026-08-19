@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
+import { loadWords } from './words.ts'
 import { DIFFICULTIES, poolFor, tierBounds, TIER_SHARES } from './difficulty.ts'
 import { puzzleKey, samePuzzle } from './types.ts'
 
@@ -26,8 +26,7 @@ test('an uneven pool still covers every word and leaves no tier empty', () => {
   for (const tier of tiers) assert.ok(tier.length > 0)
 })
 
-const realAnswers = () =>
-  readFileSync(new URL('../data/answers-5.txt', import.meta.url), 'utf8').split('\n').filter(Boolean)
+const realAnswers = () => loadWords(5).answers
 
 test('the real pools are big enough that words rarely repeat', () => {
   const answers = realAnswers()
