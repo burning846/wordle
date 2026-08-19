@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { formatCountdown, msUntilNextPuzzle } from '../game/daily.ts'
-import { buildShareText, copyToClipboard } from '../game/share.ts'
-import { DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.ts'
-import { averageGuesses, winPercentage, type Stats } from '../game/stats.ts'
-import type { GameMode, GameSnapshot, WordLength } from '../game/types.ts'
-import { Modal } from './Modal.tsx'
+import { formatCountdown, msUntilNextPuzzle } from '../game/daily.js'
+import { buildShareText, copyToClipboard } from '../game/share.js'
+import { DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.js'
+import { averageGuesses, winPercentage, type Stats } from '../game/stats.js'
+import type { GameMode, GameSnapshot, WordLength } from '../game/types.js'
+import { Modal } from './Modal.js'
 import './StatsModal.css'
 
 interface StatsModalProps {

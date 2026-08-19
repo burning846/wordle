@@ -1,5 +1,5 @@
-import { dailyOrder } from './shuffle.ts'
-import type { WordLength } from './types.ts'
+import { dailyOrder } from './shuffle.js'
+import type { WordLength } from './types.js'
 
 export interface Dictionary {
   length: WordLength
@@ -17,10 +17,10 @@ export interface Dictionary {
  * 5 letters never downloads the 265KB 7-letter list.
  */
 const SOURCES: Record<WordLength, () => Promise<[string, string]>> = {
-  4: () => load(import('../data/answers-4.ts'), import('../data/guesses-4.ts')),
-  5: () => load(import('../data/answers-5.ts'), import('../data/guesses-5.ts')),
-  6: () => load(import('../data/answers-6.ts'), import('../data/guesses-6.ts')),
-  7: () => load(import('../data/answers-7.ts'), import('../data/guesses-7.ts')),
+  4: () => load(import('../data/answers-4.js'), import('../data/guesses-4.js')),
+  5: () => load(import('../data/answers-5.js'), import('../data/guesses-5.js')),
+  6: () => load(import('../data/answers-6.js'), import('../data/guesses-6.js')),
+  7: () => load(import('../data/answers-7.js'), import('../data/guesses-7.js')),
 }
 
 type RawModule = Promise<{ default: string }>

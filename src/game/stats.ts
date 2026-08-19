@@ -1,5 +1,5 @@
-import { readJson, writeJson } from './storage.ts'
-import { guessLimitFor, puzzleKey, type Puzzle } from './types.ts'
+import { readJson, writeJson } from './storage.js'
+import { guessLimitFor, puzzleKey, type Puzzle } from './types.js'
 
 export interface Stats {
   played: number

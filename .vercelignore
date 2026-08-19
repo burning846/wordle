@@ -1,0 +1,4 @@
+# Vercel turns every file under api/ into a function, so tests must not be uploaded.
+*.test.ts
+scripts/.cache
+.pglite

@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { evaluateGuess, hardModeViolation, keyboardStates } from './evaluate.ts'
+import { assert, test } from 'vitest'
+import { evaluateGuess, hardModeViolation, keyboardStates } from './evaluate.js'
 
 const short = (states: string[]) => states.map((state) => state[0]).join('')
 

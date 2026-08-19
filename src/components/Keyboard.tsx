@@ -1,4 +1,4 @@
-import type { LetterState } from '../game/types.ts'
+import type { LetterState } from '../game/types.js'
 import './Keyboard.css'
 
 const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as const

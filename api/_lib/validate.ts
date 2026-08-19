@@ -1,8 +1,8 @@
-import { dailyAnswer, dayIndexFor } from '../../src/game/daily.ts'
-import { poolFor, isDifficulty, type Difficulty } from '../../src/game/difficulty.ts'
-import { dailyOrder } from '../../src/game/shuffle.ts'
-import { loadWords } from '../../src/game/words.ts'
-import { isWordLength, limitFor, type GameMode, type WordLength } from '../../src/game/types.ts'
+import { dailyAnswer, dayIndexFor } from '../../src/game/daily.js'
+import { poolFor, isDifficulty, type Difficulty } from '../../src/game/difficulty.js'
+import { dailyOrder } from '../../src/game/shuffle.js'
+import { loadWords } from '../../src/game/words.js'
+import { isWordLength, limitFor, type GameMode, type WordLength } from '../../src/game/types.js'
 
 export interface SubmittedResult {
   mode: GameMode

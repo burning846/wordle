@@ -1,18 +1,17 @@
-import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { after, before, beforeEach, test } from 'node:test'
+import { afterAll, assert, beforeAll, beforeEach, test } from 'vitest'
 import { PGlite } from '@electric-sql/pglite'
-import { setDatabase } from './_lib/db.ts'
-import { dailyAnswer, dayIndexFor } from '../src/game/daily.ts'
-import { dailyOrder } from '../src/game/shuffle.ts'
-import { poolFor } from '../src/game/difficulty.ts'
-import { loadWords } from '../src/game/words.ts'
-import { POST as register } from './register.ts'
-import { POST as link } from './link.ts'
-import { POST as results } from './results.ts'
-import { GET as leaderboard } from './leaderboard.ts'
-import { GET as me } from './me.ts'
-import { GET as health } from './health.ts'
+import { setDatabase } from './_lib/db.js'
+import { dailyAnswer, dayIndexFor } from '../src/game/daily.js'
+import { dailyOrder } from '../src/game/shuffle.js'
+import { poolFor } from '../src/game/difficulty.js'
+import { loadWords } from '../src/game/words.js'
+import { POST as register } from './register.js'
+import { POST as link } from './link.js'
+import { POST as results } from './results.js'
+import { GET as leaderboard } from './leaderboard.js'
+import { GET as me } from './me.js'
+import { GET as health } from './health.js'
 
 /**
  * Runs the routes against a real Postgres compiled to WebAssembly, so the schema,
@@ -21,14 +20,14 @@ import { GET as health } from './health.ts'
  */
 let pg: PGlite
 
-before(async () => {
+beforeAll(async () => {
   pg = await PGlite.create()
   setDatabase({
     query: async (text, params = []) => (await pg.query(text, params)).rows as never[],
   })
 })
 
-after(async () => {
+afterAll(async () => {
   setDatabase(null)
   await pg.close()
 })
@@ -86,7 +85,7 @@ test('health reports a working deployment', async () => {
   assert.equal(body.database, 'ok')
   assert.match(String(body.databaseUrl), /^set \(db\.example\.com\)$/)
   // The password must never appear, since this response is meant to be pasted around.
-  assert.doesNotMatch(JSON.stringify(body), /pass@|:pass/)
+  assert.notMatch(JSON.stringify(body), /pass@|:pass/)
 })
 
 test('health answers even with no database at all', async () => {
@@ -143,7 +142,7 @@ test('an unexpected failure is caught and reported without internals', async () 
     assert.equal(response.status, 500)
     const { error: message } = (await response.json()) as { error: string }
     assert.equal(message, 'The server hit an unexpected error')
-    assert.doesNotMatch(message, /hunter2|10\.0\.0\.1/, 'internals must not reach the client')
+    assert.notMatch(message, /hunter2|10\.0\.0\.1/, 'internals must not reach the client')
   } finally {
     setDatabase({ query: async (text, params = []) => (await pg.query(text, params)).rows as never[] })
   }

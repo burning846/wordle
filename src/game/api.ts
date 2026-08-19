@@ -1,6 +1,6 @@
-import { readJson, removeKey, writeJson } from './storage.ts'
-import type { Difficulty } from './difficulty.ts'
-import type { GameMode, WordLength } from './types.ts'
+import { readJson, removeKey, writeJson } from './storage.js'
+import type { Difficulty } from './difficulty.js'
+import type { GameMode, WordLength } from './types.js'
 
 /**
  * The wire contract, shared by the browser and the API routes so the two cannot

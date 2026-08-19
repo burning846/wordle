@@ -1,8 +1,7 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { loadWords } from './words.ts'
-import { DIFFICULTIES, poolFor, tierBounds, TIER_SHARES } from './difficulty.ts'
-import { puzzleKey, samePuzzle } from './types.ts'
+import { assert, test } from 'vitest'
+import { loadWords } from './words.js'
+import { DIFFICULTIES, poolFor, tierBounds, TIER_SHARES } from './difficulty.js'
+import { puzzleKey, samePuzzle } from './types.js'
 
 /** Stands in for a frequency-ordered answer pool, most common first. */
 const ranked = Array.from({ length: 9 }, (_, index) => `w${index}`)

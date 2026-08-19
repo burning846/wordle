@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLIP_MS, REVEAL_STEP_MS } from '../game/animation.ts'
-import type { Draft } from '../game/draft.ts'
-import { evaluateGuess } from '../game/evaluate.ts'
-import type { Shake } from '../hooks/useGame.ts'
-import type { LetterState, WordLength } from '../game/types.ts'
+import { FLIP_MS, REVEAL_STEP_MS } from '../game/animation.js'
+import type { Draft } from '../game/draft.js'
+import { evaluateGuess } from '../game/evaluate.js'
+import type { Shake } from '../hooks/useGame.js'
+import type { LetterState, WordLength } from '../game/types.js'
 import './Board.css'
 
 /** Must match the grid gap in Board.css. */

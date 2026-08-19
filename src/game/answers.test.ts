@@ -1,7 +1,6 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { loadWords } from './words.ts'
-import { WORD_LENGTHS, type WordLength } from './types.ts'
+import { assert, test } from 'vitest'
+import { loadWords } from './words.js'
+import { WORD_LENGTHS, type WordLength } from './types.js'
 
 const answers = (length: WordLength) => loadWords(length).answers
 const guesses = (length: WordLength) => new Set(loadWords(length).guesses)

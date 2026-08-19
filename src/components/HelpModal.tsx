@@ -1,5 +1,5 @@
-import { guessLimitFor, type GameMode, type LetterState, type WordLength } from '../game/types.ts'
-import { Modal } from './Modal.tsx'
+import { guessLimitFor, type GameMode, type LetterState, type WordLength } from '../game/types.js'
+import { Modal } from './Modal.js'
 import './HelpModal.css'
 
 interface HelpModalProps {

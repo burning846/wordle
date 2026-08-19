@@ -1,6 +1,6 @@
-import { getDatabase } from './_lib/db.ts'
-import { authenticate, error, json, readJson, route } from './_lib/http.ts'
-import { validateResult } from './_lib/validate.ts'
+import { getDatabase } from './_lib/db.js'
+import { authenticate, error, json, readJson, route } from './_lib/http.js'
+import { validateResult } from './_lib/validate.js'
 
 /**
  * Records a finished game. The submission is replayed server-side before it is

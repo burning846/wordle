@@ -1,6 +1,6 @@
-import { DEFAULT_DIFFICULTY, isDifficulty, type Difficulty } from './difficulty.ts'
-import { readJson, writeJson } from './storage.ts'
-import { DEFAULT_LENGTH, isWordLength, type GameMode, type WordLength } from './types.ts'
+import { DEFAULT_DIFFICULTY, isDifficulty, type Difficulty } from './difficulty.js'
+import { readJson, writeJson } from './storage.js'
+import { DEFAULT_LENGTH, isWordLength, type GameMode, type WordLength } from './types.js'
 
 export type Theme = 'light' | 'dark'
 

@@ -1,4 +1,4 @@
-import type { LetterState } from './types.ts'
+import type { LetterState } from './types.js'
 
 /**
  * Scores a guess against the answer.

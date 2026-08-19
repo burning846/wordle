@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { revealDurationFor } from '../game/animation.ts'
-import { dailyAnswer, dayIndexFor, msUntilNextPuzzle, randomAnswer } from '../game/daily.ts'
-import { loadDictionary, type Dictionary } from '../game/dictionary.ts'
+import { revealDurationFor } from '../game/animation.js'
+import { dailyAnswer, dayIndexFor, msUntilNextPuzzle, randomAnswer } from '../game/daily.js'
+import { loadDictionary, type Dictionary } from '../game/dictionary.js'
 import {
   backspaceDraft,
   draftFrom,
@@ -9,11 +9,11 @@ import {
   emptyDraft,
   typeIntoDraft,
   type Draft,
-} from '../game/draft.ts'
-import { poolFor } from '../game/difficulty.ts'
-import { hardModeViolation, keyboardStates, knownLetters } from '../game/evaluate.ts'
-import { loadStats, recordResult, type Stats } from '../game/stats.ts'
-import { readJson, removeKey, writeJson } from '../game/storage.ts'
+} from '../game/draft.js'
+import { poolFor } from '../game/difficulty.js'
+import { hardModeViolation, keyboardStates, knownLetters } from '../game/evaluate.js'
+import { loadStats, recordResult, type Stats } from '../game/stats.js'
+import { readJson, removeKey, writeJson } from '../game/storage.js'
 import {
   limitFor,
   puzzleKey,
@@ -22,7 +22,7 @@ import {
   type Puzzle,
   type GameSnapshot,
   type LetterState,
-} from '../game/types.ts'
+} from '../game/types.js'
 
 const WIN_MESSAGES = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Phew', 'Nice']
 const TOAST_MS = 1800

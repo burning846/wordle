@@ -1,8 +1,7 @@
-import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { test } from 'node:test'
+import { assert, test } from 'vitest'
 import { PGlite } from '@electric-sql/pglite'
-import { splitStatements } from './_lib/schema.ts'
+import { splitStatements } from './_lib/schema.js'
 
 const schema = readFileSync(new URL('./_lib/schema.sql', import.meta.url), 'utf8')
 

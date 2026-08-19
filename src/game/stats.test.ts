@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import { beforeEach, test } from 'node:test'
+import { assert, beforeEach, test } from 'vitest'
 
 // storage.ts reads window.localStorage on each call, so an in-memory stand-in is
 // enough. Installed before the dynamic import so nothing touches a missing global.
@@ -15,7 +14,7 @@ Object.defineProperty(globalThis, 'window', {
   writable: true,
 })
 
-const { averageGuesses, loadStats, recordResult, winPercentage } = await import('./stats.ts')
+const { averageGuesses, loadStats, recordResult, winPercentage } = await import('./stats.js')
 
 const daily = (length: 4 | 5 | 6 | 7 = 5) =>
   ({ mode: 'daily', length, difficulty: 'medium' }) as const

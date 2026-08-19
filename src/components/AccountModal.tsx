@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { fetchProfile, requestLinkCode, type Profile } from '../game/api.ts'
-import { DIFFICULTY_LABELS } from '../game/difficulty.ts'
-import { dailyNumber } from '../game/daily.ts'
-import type { AccountApi } from '../hooks/useAccount.ts'
-import { Modal } from './Modal.tsx'
+import { fetchProfile, requestLinkCode, type Profile } from '../game/api.js'
+import { DIFFICULTY_LABELS } from '../game/difficulty.js'
+import { dailyNumber } from '../game/daily.js'
+import type { AccountApi } from '../hooks/useAccount.js'
+import { Modal } from './Modal.js'
 import './AccountModal.css'
 
 interface AccountModalProps {

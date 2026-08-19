@@ -9,8 +9,8 @@ import {
   submitResult,
   type Account,
   type SubmittedResult,
-} from '../game/api.ts'
-import type { FinishedGame } from './useGame.ts'
+} from '../game/api.js'
+import type { FinishedGame } from './useGame.js'
 
 export interface AccountApi {
   account: Account | null

@@ -1,12 +1,12 @@
-import answers4 from '../data/answers-4.ts'
-import answers5 from '../data/answers-5.ts'
-import answers6 from '../data/answers-6.ts'
-import answers7 from '../data/answers-7.ts'
-import guesses4 from '../data/guesses-4.ts'
-import guesses5 from '../data/guesses-5.ts'
-import guesses6 from '../data/guesses-6.ts'
-import guesses7 from '../data/guesses-7.ts'
-import type { WordLength } from './types.ts'
+import answers4 from '../data/answers-4.js'
+import answers5 from '../data/answers-5.js'
+import answers6 from '../data/answers-6.js'
+import answers7 from '../data/answers-7.js'
+import guesses4 from '../data/guesses-4.js'
+import guesses5 from '../data/guesses-5.js'
+import guesses6 from '../data/guesses-6.js'
+import guesses7 from '../data/guesses-7.js'
+import type { WordLength } from './types.js'
 
 export interface Words {
   /** Answers ordered by descending everyday usage — the difficulty ranking. */

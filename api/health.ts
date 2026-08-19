@@ -1,5 +1,5 @@
-import { getDatabase } from './_lib/db.ts'
-import { json, route } from './_lib/http.ts'
+import { getDatabase } from './_lib/db.js'
+import { json, route } from './_lib/http.js'
 
 /**
  * Diagnostics for a deployment that cannot be run locally.

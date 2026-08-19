@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { assert, test } from 'vitest'
 import {
   backspaceDraft,
   draftFrom,
@@ -7,8 +6,8 @@ import {
   emptyDraft,
   typeIntoDraft,
   type Draft,
-} from './draft.ts'
-import { knownLetters } from './evaluate.ts'
+} from './draft.js'
+import { knownLetters } from './evaluate.js'
 
 const show = (draft: Draft) => draft.slots.map((letter) => letter ?? '_').join('')
 

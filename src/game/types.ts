@@ -1,4 +1,4 @@
-import type { Difficulty } from './difficulty.ts'
+import type { Difficulty } from './difficulty.js'
 
 /** Colour a tile ends up in once its guess is revealed. */
 export type LetterState = 'correct' | 'present' | 'absent'

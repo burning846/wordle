@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { guessLimitFor, limitFor, rowsFor } from './types.ts'
+import { assert, test } from 'vitest'
+import { guessLimitFor, limitFor, rowsFor } from './types.js'
 
 test('daily allows one guess more than the word is long', () => {
   assert.equal(guessLimitFor(5), 6)

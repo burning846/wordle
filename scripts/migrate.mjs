@@ -9,7 +9,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import { neon } from '@neondatabase/serverless'
-import { splitStatements } from '../api/_lib/schema.ts'
+import { splitStatements } from '../api/_lib/schema.js'
 
 // Convenience for local runs: .env is gitignored, so the connection string can live
 // there instead of being retyped. A real environment variable still wins.

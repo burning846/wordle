@@ -1,6 +1,6 @@
-import { evaluateGuess } from './evaluate.ts'
-import { dailyNumber } from './daily.ts'
-import { guessLimitFor, type GameMode, type GameStatus, type LetterState, type WordLength } from './types.ts'
+import { evaluateGuess } from './evaluate.js'
+import { dailyNumber } from './daily.js'
+import { guessLimitFor, type GameMode, type GameStatus, type LetterState, type WordLength } from './types.js'
 
 const TILES: Record<LetterState, string> = { correct: '🟩', present: '🟨', absent: '⬛' }
 const TILES_HIGH_CONTRAST: Record<LetterState, string> = { correct: '🟧', present: '🟦', absent: '⬛' }

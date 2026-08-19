@@ -1,6 +1,6 @@
-import { getDatabase } from './_lib/db.ts'
-import { createToken, hashSecret } from './_lib/identity.ts'
-import { error, json, readJson, route } from './_lib/http.ts'
+import { getDatabase } from './_lib/db.js'
+import { createToken, hashSecret } from './_lib/identity.js'
+import { error, json, readJson, route } from './_lib/http.js'
 
 const NICKNAME = /^[\p{L}\p{N} _-]{1,20}$/u
 

@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, dailyNumber } from './daily.ts'
+import { assert, test } from 'vitest'
+import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, dailyNumber } from './daily.js'
 
 const daily = ['crane', 'slate', 'audio']
 

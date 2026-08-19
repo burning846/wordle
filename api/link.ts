@@ -1,12 +1,12 @@
-import { getDatabase } from './_lib/db.ts'
+import { getDatabase } from './_lib/db.js'
 import {
   createLinkCode,
   createToken,
   hashLinkCode,
   hashSecret,
   LINK_CODE_TTL_MS,
-} from './_lib/identity.ts'
-import { authenticate, error, json, readJson, route } from './_lib/http.ts'
+} from './_lib/identity.js'
+import { authenticate, error, json, readJson, route } from './_lib/http.js'
 
 /**
  * Cross-device play without accounts.

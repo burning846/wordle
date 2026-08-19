@@ -1,6 +1,6 @@
-import { getDatabase } from './_lib/db.ts'
-import { authenticate, error, json, route } from './_lib/http.ts'
-import type { HistoryEntry, Totals } from '../src/game/api.ts'
+import { getDatabase } from './_lib/db.js'
+import { authenticate, error, json, route } from './_lib/http.js'
+import type { HistoryEntry, Totals } from '../src/game/api.js'
 
 const HISTORY_LIMIT = 60
 

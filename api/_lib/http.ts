@@ -1,5 +1,5 @@
-import { getDatabase, type Database } from './db.ts'
-import { hashSecret } from './identity.ts'
+import { getDatabase, type Database } from './db.js'
+import { hashSecret } from './identity.js'
 
 /**
  * A deployment that is missing something it needs, as opposed to a bug. Its message

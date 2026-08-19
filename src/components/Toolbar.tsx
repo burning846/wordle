@@ -1,6 +1,6 @@
-import { DIFFICULTIES, DIFFICULTY_HINTS, DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.ts'
-import { MODE_LABELS } from '../game/settings.ts'
-import { WORD_LENGTHS, type GameMode, type WordLength } from '../game/types.ts'
+import { DIFFICULTIES, DIFFICULTY_HINTS, DIFFICULTY_LABELS, type Difficulty } from '../game/difficulty.js'
+import { MODE_LABELS } from '../game/settings.js'
+import { WORD_LENGTHS, type GameMode, type WordLength } from '../game/types.js'
 import './Toolbar.css'
 
 interface ToolbarProps {

@@ -20,7 +20,9 @@ type Handler = (request: Request) => Promise<Response>
 export function devApi(): Plugin {
   return {
     name: 'wordle-dev-api',
-    apply: 'serve',
+    // Vitest counts as serve mode, and the database this opens would keep its process
+    // alive after the tests finish.
+    apply: (_config, env) => env.command === 'serve' && !process.env.VITEST,
 
     async configureServer(server: ViteDevServer) {
       const { PGlite } = await import('@electric-sql/pglite')

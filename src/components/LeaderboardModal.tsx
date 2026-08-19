@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { fetchLeaderboard, ApiUnavailable, type Leaderboard } from '../game/api.ts'
-import { dailyNumber } from '../game/daily.ts'
-import type { WordLength } from '../game/types.ts'
-import { Modal } from './Modal.tsx'
+import { fetchLeaderboard, ApiUnavailable, type Leaderboard } from '../game/api.js'
+import { dailyNumber } from '../game/daily.js'
+import type { WordLength } from '../game/types.js'
+import { Modal } from './Modal.js'
 import './LeaderboardModal.css'
 
 interface LeaderboardModalProps {

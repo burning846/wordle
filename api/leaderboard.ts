@@ -1,8 +1,8 @@
-import { getDatabase } from './_lib/db.ts'
-import { dayIndexFor } from '../src/game/daily.ts'
-import { error, json, route } from './_lib/http.ts'
-import { isWordLength } from '../src/game/types.ts'
-import type { LeaderboardRow } from '../src/game/api.ts'
+import { getDatabase } from './_lib/db.js'
+import { dayIndexFor } from '../src/game/daily.js'
+import { error, json, route } from './_lib/http.js'
+import { isWordLength } from '../src/game/types.js'
+import type { LeaderboardRow } from '../src/game/api.js'
 
 const MAX_ROWS = 50
 

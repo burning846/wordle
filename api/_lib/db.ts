@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless'
-import { ConfigurationError } from './http.ts'
+import { ConfigurationError } from './http.js'
 
 /**
  * The narrowest database interface the routes need: parameterised SQL in, rows out.

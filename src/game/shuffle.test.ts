@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict'
-import { test } from 'node:test'
-import { shuffled } from './shuffle.ts'
+import { assert, test } from 'vitest'
+import { shuffled } from './shuffle.js'
 
 const items = Array.from({ length: 50 }, (_, index) => index)
 
