@@ -3,20 +3,25 @@
  *
  * Two lists are produced per word length:
  *   guesses-N.txt — every word accepted as a guess (SCOWL dictionary via `word-list`)
- *   answers-N.txt — the far smaller pool a puzzle answer is drawn from, i.e. the
- *                   dictionary intersected with a frequency list so answers stay fair
+ *   answers-N.txt — the smaller pool an answer is drawn from, ordered by everyday
+ *                   usage so that practice difficulty can slice it into tiers
  *
- * answers-N.txt is ordered by everyday usage, most common word first. That order is
- * what practice mode's difficulty tiers slice up, and the daily sequence shuffles it
- * at runtime with a fixed seed — so this one file drives both.
+ * The answer pool is SCOWL's everyday vocabulary, ranked by a frequency list. The
+ * frequency list only orders the pool; it does not define it. Using it as the source
+ * instead would cut the pool to a third of its size, since a word has to be inside
+ * the corpus's top entries to appear at all.
+ *
+ * answers-N.txt is ordered most-common-first. That single ordering does double duty:
+ * practice difficulty slices it into tiers, and the daily sequence is a seeded
+ * shuffle of it computed at runtime in src/game/shuffle.ts.
  *
  * Run with: npm run words
  */
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import wordListPath from 'word-list'
 import { createRequire } from 'node:module'
+import wordListPath from 'word-list'
 
 const require = createRequire(import.meta.url)
 
@@ -27,38 +32,66 @@ const CACHE = resolve(ROOT, 'scripts/.cache/frequency.txt')
 /** Word lengths the game supports. */
 const LENGTHS = [4, 5, 6, 7]
 
-/** Frequency-ranked English words, most common first. */
+/**
+ * Word frequencies from a 50,000-word subtitle corpus — spoken English, which is a
+ * good proxy for "everyday usage". Only used for ordering.
+ */
 const FREQUENCY_URL =
-  'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa-no-swears.txt'
+  'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/en/en_50k.txt'
 
 /**
- * SCOWL size buckets, smallest first. Sizes up to 35 are the everyday vocabulary;
- * beyond that the lists reach into proper nouns, brands and technical jargon.
- *
- * The frequency list is web-corpus derived, so without this an answer pool drawn
- * from it offers up "texas", "linux", "anime" and "devel". Requiring a word to also
- * appear in the common buckets removes about a hundred such entries per length.
- * American spelling lists are unioned in so "color" and "honor" survive; every
- * excluded word is still accepted as a *guess*, it just can't be the answer.
+ * SCOWL size buckets, smallest first. Sizes up to 35 are everyday vocabulary; beyond
+ * that the lists reach into proper nouns, brands and technical jargon. This is the
+ * answer pool: words a player can fairly be expected to know.
  */
 const COMMON_SIZES = [10, 20, 35]
+
+/**
+ * How far down the frequency list a stem may sit and still count as an everyday word.
+ * The corpus has a long tail of noise — "chao" and "bree" both appear in it — and
+ * without a cut-off those swallow "chaos" and "breed".
+ */
+const STEM_RANK_LIMIT = 8000
+
+/** Informal spellings that SCOWL lists but no one wants as a puzzle answer. */
+const INFORMAL = new Set(['gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'outta', 'dunno', 'lotta'])
+
+async function frequencyList() {
+  if (existsSync(CACHE)) return readFileSync(CACHE, 'utf8')
+  const res = await fetch(FREQUENCY_URL)
+  if (!res.ok) throw new Error(`frequency list download failed: ${res.status}`)
+  const text = await res.text()
+  mkdirSync(dirname(CACHE), { recursive: true })
+  writeFileSync(CACHE, text)
+  return text
+}
+
+/**
+ * Everyday vocabulary, lowercase only. Capitalised entries are proper nouns and
+ * initialisms, which make unfair answers, so they are dropped rather than folded.
+ */
+function commonVocabulary() {
+  const words = COMMON_SIZES.flatMap((size) => [
+    ...require(`wordlist-english/english-words-${size}.json`),
+    ...require(`wordlist-english/american-words-${size}.json`),
+  ])
+  return new Set(words.filter((word) => /^[a-z]+$/.test(word)))
+}
 
 /**
  * Recognises a word as an inflected form of a shorter one, returning that base.
  *
  * Answers should be base words: "beads", "voted" and "going" make dull targets and
- * give away their last letter. Guesses are left alone, so a player can still type a
+ * give away their ending. Guesses are left alone, so a player can still type a
  * plural freely.
  *
- * The rule is that a suffix can be stripped only if what remains is itself an
- * everyday word. That keeps genuine words whose endings merely look inflected —
- * "thing", "bring", "speed", "chaos", "focus", "glass" all survive, because "th",
- * "br", "spe", "chao", "focu" and "glas" are not words anyone uses. It errs towards
- * keeping words: a stray "used" in the pool costs far less than losing "need".
+ * A suffix is only stripped when what remains is itself an everyday word. That keeps
+ * words whose endings merely look inflected — "thing", "bring", "speed", "chaos",
+ * "focus" and "glass" all survive, because "th", "br", "spe", "chao", "focu" and
+ * "glas" are not words anyone uses. Where the two directions conflict it keeps the
+ * word: a stray "used" in the pool costs less than losing "need" from it.
  */
-function inflectedFrom(word, isWord) {
-  // Two-letter stems must be genuinely common ("go", "us"), since the wider lists
-  // carry fragments like "ne" that would swallow "need".
+function inflectedFrom(word, isWord, { comparatives = false } = {}) {
   const has = (stem) => stem.length >= 2 && isWord(stem)
 
   if (word.endsWith('s') && !word.endsWith('ss')) {
@@ -73,7 +106,7 @@ function inflectedFrom(word, isWord) {
 
   if (word.endsWith('ed')) {
     const base = word.slice(0, -2)
-    // Three letters minimum here, or "need" strips to "ne" and disappears.
+    // Three letters minimum, or "need" strips to "ne" and disappears.
     if (base.length >= 3 && has(base)) return base // asked -> ask
     if (base.length >= 3 && has(word.slice(0, -1))) return word.slice(0, -1) // voted -> vote
     if (word.endsWith('ied') && has(word.slice(0, -3) + 'y')) return word.slice(0, -3) + 'y' // tried -> try
@@ -92,69 +125,85 @@ function inflectedFrom(word, isWord) {
     }
   }
 
+  // Borrowed Latin plurals, which no amount of English suffix stripping catches.
+  if (word.endsWith('i') && has(word.slice(0, -1) + 'us')) return word.slice(0, -1) + 'us' // radii -> radius
+  if (word.endsWith('es') && has(word.slice(0, -2) + 'is')) return word.slice(0, -2) + 'is' // oases -> oasis
+
+  /**
+   * Comparatives are only stripped for words the corpus never saw. The rule is
+   * otherwise far too eager — "cover" would reduce to "cove", "offer" to "off" and
+   * "tower" to "tow" — but every one of those is a word people actually say, so being
+   * absent from a 50,000-word corpus is strong evidence a word really is a comparative
+   * nobody uses. It leaves agent nouns like "baker" and "miner" alone for the same
+   * reason.
+   */
+  if (comparatives) {
+    if (word.endsWith('er')) {
+      if (has(word.slice(0, -2))) return word.slice(0, -2) // huger -> hug... only if unranked
+      if (has(word.slice(0, -1))) return word.slice(0, -1) // abler -> able
+      if (word.endsWith('ier') && has(word.slice(0, -3) + 'y')) return word.slice(0, -3) + 'y' // icier -> icy
+    }
+    if (word.endsWith('est')) {
+      if (has(word.slice(0, -3))) return word.slice(0, -3) // slowest -> slow
+      if (has(word.slice(0, -2))) return word.slice(0, -2) // weest -> wee
+      if (word.endsWith('iest') && has(word.slice(0, -4) + 'y')) return word.slice(0, -4) + 'y' // iciest -> icy
+    }
+  }
+
   return null
-}
-
-function commonVocabulary() {
-  const words = COMMON_SIZES.flatMap((size) => [
-    ...require(`wordlist-english/english-words-${size}.json`),
-    ...require(`wordlist-english/american-words-${size}.json`),
-  ])
-  return new Set(words.map((word) => word.toLowerCase()))
-}
-
-async function frequencyList() {
-  if (existsSync(CACHE)) return readFileSync(CACHE, 'utf8')
-  const res = await fetch(FREQUENCY_URL)
-  if (!res.ok) throw new Error(`frequency list download failed: ${res.status}`)
-  const text = await res.text()
-  mkdirSync(dirname(CACHE), { recursive: true })
-  writeFileSync(CACHE, text)
-  return text
 }
 
 const lines = (text) =>
   text
     .split('\n')
-    .map((word) => word.trim().toLowerCase())
+    .map((line) => line.trim().split(/\s+/)[0]?.toLowerCase())
     .filter(Boolean)
 
 const dictionary = new Set(lines(readFileSync(wordListPath, 'utf8')))
-const frequency = lines(await frequencyList())
 const common = commonVocabulary()
-const frequent = new Set(frequency)
+
+/** Position in the frequency list; absent words sort after every ranked one. */
+const rank = new Map()
+lines(await frequencyList()).forEach((word, index) => {
+  if (!rank.has(word)) rank.set(word, index)
+})
+const rankOf = (word) => rank.get(word) ?? Number.MAX_SAFE_INTEGER
 
 /**
- * A stem counts as a real word if the dictionary knows it and people actually use it.
- * Short stems must clear the stricter common-vocabulary bar; longer ones may instead
- * appear in the frequency list, which is what catches "sucking" or "dying".
+ * A stem counts as a word if everyday vocabulary knows it, or — for stems long enough
+ * not to be a stray fragment — if both the dictionary and the frequency list do.
  */
 const isWord = (stem) =>
-  dictionary.has(stem) && (common.has(stem) || (stem.length >= 4 && frequent.has(stem)))
+  common.has(stem) ||
+  (stem.length >= 4 && dictionary.has(stem) && rankOf(stem) < STEM_RANK_LIMIT)
 
 mkdirSync(DATA_DIR, { recursive: true })
 
 for (const length of LENGTHS) {
-  const alphabetic = (word) => word.length === length && /^[a-z]+$/.test(word)
+  const rightLength = (word) => word.length === length
 
-  const guesses = [...dictionary].filter(alphabetic).sort()
-  // Frequency order is preserved: it is the difficulty ranking.
-  const eligible = frequency.filter(
-    (word) => alphabetic(word) && dictionary.has(word) && common.has(word),
+  const guesses = [...dictionary].filter((word) => rightLength(word) && /^[a-z]+$/.test(word)).sort()
+
+  // Intersected with the guess dictionary for two reasons: it guarantees every answer
+  // is a word the game will accept, and that dictionary is profanity-filtered while
+  // the SCOWL size buckets are not.
+  const eligible = [...common].filter(
+    (word) => rightLength(word) && dictionary.has(word) && !INFORMAL.has(word),
   )
-  const answers = eligible.filter((word) => !inflectedFrom(word, isWord))
+  const answers = eligible
+    .filter((word) => !inflectedFrom(word, isWord, { comparatives: !rank.has(word) }))
+    // Most common first, then alphabetically among words the corpus never saw.
+    .sort((a, b) => rankOf(a) - rankOf(b) || a.localeCompare(b))
 
   if (answers.length === 0) throw new Error(`no answers found for length ${length}`)
 
   writeFileSync(resolve(DATA_DIR, `guesses-${length}.txt`), guesses.join('\n') + '\n')
   writeFileSync(resolve(DATA_DIR, `answers-${length}.txt`), answers.join('\n') + '\n')
 
-  const tier = Math.ceil(answers.length / 3)
-  const uncommon = frequency.filter(
-    (word) => alphabetic(word) && dictionary.has(word) && !common.has(word),
-  ).length
+  const unranked = answers.filter((word) => !rank.has(word)).length
   console.log(
     `length ${length}: ${guesses.length} guesses, ${answers.length} answers ` +
-      `(${tier} per tier; dropped ${uncommon} uncommon, ${eligible.length - answers.length} inflected)`,
+      `(from ${eligible.length} common words, ${eligible.length - answers.length} inflected, ` +
+      `${unranked} unranked)`,
   )
 }

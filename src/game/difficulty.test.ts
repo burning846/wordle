@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { DIFFICULTIES, poolFor } from './difficulty.ts'
+import { DIFFICULTIES, poolFor, tierBounds, TIER_SHARES } from './difficulty.ts'
 import { puzzleKey, samePuzzle } from './types.ts'
 
 /** Stands in for a frequency-ordered answer pool, most common first. */
@@ -32,7 +32,7 @@ const realAnswers = () =>
 test('the real pools are big enough that words rarely repeat', () => {
   const answers = realAnswers()
   for (const difficulty of DIFFICULTIES) {
-    assert.ok(poolFor(answers, difficulty).length > 200, `${difficulty} tier is too small`)
+    assert.ok(poolFor(answers, difficulty).length > 500, `${difficulty} tier is too small`)
   }
 })
 
@@ -55,4 +55,27 @@ test('practice stats and games are keyed per difficulty, daily is not', () => {
   const b = { mode: 'daily', length: 5, difficulty: 'hard' } as const
   assert.equal(puzzleKey(a), puzzleKey(b))
   assert.ok(samePuzzle(a, b))
+})
+
+test('tier shares sum to the whole pool', () => {
+  const total = Object.values(TIER_SHARES).reduce((sum, share) => sum + share, 0)
+  assert.ok(Math.abs(total - 1) < 1e-9, `shares sum to ${total}, not 1`)
+})
+
+test('tiers tile the pool with no gap or overlap', () => {
+  for (const total of [1, 2, 7, 100, 2012, 2013]) {
+    let previousEnd = 0
+    for (const difficulty of DIFFICULTIES) {
+      const [start, end] = tierBounds(total, difficulty)
+      assert.equal(start, previousEnd, `${difficulty} starts at ${start}, expected ${previousEnd}`)
+      previousEnd = end
+    }
+    assert.equal(previousEnd, total, `tiers ended at ${previousEnd}, expected ${total}`)
+  }
+})
+
+test('changing the shares moves the boundaries', () => {
+  // Guards the wiring: with equal thirds, easy takes a third of the pool.
+  const [start, end] = tierBounds(300, 'easy')
+  assert.deepEqual([start, end], [0, 100])
 })

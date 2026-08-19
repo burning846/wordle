@@ -34,23 +34,40 @@ test('answers hold no duplicates', () => {
 
 test('inflected forms are not answers', () => {
   const pool = new Set(WORD_LENGTHS.flatMap(answers))
-  for (const word of ['books', 'birds', 'going', 'asked', 'voted', 'tries', 'dying', 'wives']) {
+  const inflections = ['books', 'birds', 'going', 'asked', 'voted', 'tries', 'dying', 'wives',
+    'sucking', 'wryer', 'weest', 'abler', 'uteri', 'radii', 'oases']
+  for (const word of inflections) {
     assert.ok(!pool.has(word), `${word} should have been filtered out`)
   }
 })
 
 test('words that only look inflected are kept', () => {
   // The filter strips a suffix only when a real word remains, so these must survive.
+  // "cover", "offer" and "baker" additionally rely on the comparative rule staying
+  // clear of words the frequency corpus knows.
   const pool = new Set(WORD_LENGTHS.flatMap(answers))
-  for (const word of ['thing', 'bring', 'speed', 'chaos', 'class', 'focus', 'need', 'king']) {
+  const keepers = ['thing', 'bring', 'speed', 'chaos', 'class', 'focus', 'need', 'king',
+    'cover', 'offer', 'tower', 'inner', 'baker', 'miner', 'boxer', 'breed']
+  for (const word of keepers) {
     assert.ok(pool.has(word), `${word} should have been kept`)
   }
 })
 
 test('no answer is the plural of another answer', () => {
   const pool = new Set(WORD_LENGTHS.flatMap(answers))
-  const plurals = [...pool].filter((word) => word.endsWith('s') && pool.has(word.slice(0, -1)))
+  const plurals = [...pool].filter(
+    // "discuss" is not the plural of "discus", nor "canvass" of "canvas" — a double s
+    // rules the pairing out, the same way the generator does.
+    (word) => word.endsWith('s') && !word.endsWith('ss') && pool.has(word.slice(0, -1)),
+  )
   assert.deepEqual(plurals, [])
+})
+
+test('informal spellings are not answers', () => {
+  const pool = new Set(WORD_LENGTHS.flatMap(answers))
+  for (const word of ['gonna', 'wanna', 'kinda', 'sorta']) {
+    assert.ok(!pool.has(word), `${word} should not be an answer`)
+  }
 })
 
 test('plurals are still accepted as guesses', () => {
@@ -63,6 +80,6 @@ test('plurals are still accepted as guesses', () => {
 
 test('each pool is large enough to keep the daily sequence fresh for years', () => {
   for (const length of WORD_LENGTHS) {
-    assert.ok(answers(length).length > 600, `length ${length} pool is too small`)
+    assert.ok(answers(length).length > 1400, `length ${length} pool is too small`)
   }
 })

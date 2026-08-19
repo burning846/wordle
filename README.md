@@ -21,9 +21,10 @@ npm run build    # typecheck + production build into dist/
   simply adds another row. The board starts at the daily height and grows, shrinking its tiles to
   fit and scrolling once they reach their minimum size.
 - **Difficulty** (practice only) — graded by how common a word is in everyday use. The answer pool
-  is frequency-ranked, and Easy, Medium and Hard take equal thirds of it, most common first. Daily
-  keeps drawing from the whole pool, since it has to be the same word for everyone. Each tier keeps
-  its own in-progress board and its own record.
+  is frequency-ranked, and Easy, Medium and Hard take equal thirds of it, most common first — about
+  666 words each at five letters. The split lives in `TIER_SHARES` in `src/game/difficulty.ts`;
+  change those shares to move the boundaries. Daily keeps drawing from the whole pool, since it has
+  to be the same word for everyone. Each tier keeps its own in-progress board and its own record.
 - **Green letters carry forward** — a letter proven to be in the right place is filled into your
   next guess automatically, outlined rather than filled so the row still reads as unsubmitted.
   Backspace undoes entries newest-first, so a carried-over letter only clears once nothing typed
@@ -44,22 +45,28 @@ Statistics, settings, and in-progress boards live in `localStorage`, keyed by mo
 | File            | Contents                                                       |
 | --------------- | -------------------------------------------------------------- |
 | `guesses-N.txt` | every word accepted as a guess (12,578 at five letters)        |
-| `answers-N.txt` | the pool answers are drawn from (793 at five letters)          |
+| `answers-N.txt` | the pool answers are drawn from (1,997 at five letters)        |
 
-Guesses come from the SCOWL dictionary shipped in the `word-list` package. Answers are that
-dictionary intersected with a frequency-ranked list, so the target is always something a player has
-plausibly seen, while obscure-but-real words are still accepted as guesses.
+Guesses come from the SCOWL dictionary shipped in the `word-list` package. Answers are SCOWL's
+everyday vocabulary (sizes 10-35, via `wordlist-english`) intersected with that dictionary, which
+both guarantees every answer is guessable and inherits the dictionary's profanity filtering.
+Capitalised entries are dropped rather than folded, so proper nouns never become answers.
 
-Two further filters apply to answers only, never to guesses:
+A frequency list of 50,000 words from a subtitle corpus **orders** the pool but does not define it;
+using it as the source instead would cut the pool to a third of its size, since a word would have
+to be in the corpus at all to appear. `answers-N.txt` is written most-common-first, and that single
+ordering does double duty: practice difficulty slices it into tiers, and the daily sequence is a
+seeded shuffle of it computed at runtime (`src/game/shuffle.ts`). Changing that seed or the shuffle
+re-orders every future daily puzzle, so both are fixed now that the game is live.
 
-- The frequency list is web-corpus derived, so answers must also appear in SCOWL's
-  common-vocabulary buckets (sizes 10-35, via `wordlist-english`). Without this the pool offers up
-  `texas`, `linux`, `anime` and `devel` — about a hundred entries per length.
-- Inflected forms are dropped: plurals, `-ed` and `-ing`. A suffix is only stripped when what
-  remains is itself an everyday word, so `thing`, `bring`, `speed`, `chaos` and `focus` survive
-  while `books`, `voted` and `going` do not. Roughly a third of each pool goes this way.
+Inflected forms are dropped from answers — plurals, `-ed`, `-ing`, borrowed Latin plurals, and
+comparatives. A suffix is only stripped when what remains is itself an everyday word, so `thing`,
+`bring`, `speed`, `chaos` and `focus` survive while `books`, `voted` and `going` do not.
+Comparatives are stripped only for words the corpus never saw, since otherwise `cover` reduces to
+`cove` and `offer` to `off`.
 
-Plurals remain perfectly legal guesses — the point is only that the hidden word is a base form.
+All of this applies to answers only. Plurals remain perfectly legal guesses — the point is just
+that the hidden word is a base form.
 
 `answers-N.txt` is ordered by everyday usage, most common word first. That single ordering does
 double duty: practice difficulty slices it into thirds, and the daily sequence is a seeded shuffle
