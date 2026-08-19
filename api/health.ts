@@ -13,20 +13,20 @@ export function GET(): Promise<Response> {
   return route(async () => {
     const url = process.env.DATABASE_URL
 
-    let database = 'not configured'
-    if (url) {
-      try {
-        const [row] = await getDatabase().query<{ tables: number }>(
-          `select count(*)::int as tables
-             from information_schema.tables
-            where table_schema = 'public'
-              and table_name in ('players', 'devices', 'link_codes', 'results')`,
-        )
-        database =
-          row.tables === 4 ? 'ok' : `reachable, but ${row.tables}/4 tables exist — run npm run migrate`
-      } catch (cause) {
-        database = `unreachable: ${(cause as Error).message}`
-      }
+    // Asks the database the routes actually use, rather than inferring from the
+    // environment: in development one is injected and no URL is set at all.
+    let database: string
+    try {
+      const [row] = await getDatabase().query<{ tables: number }>(
+        `select count(*)::int as tables
+           from information_schema.tables
+          where table_schema = 'public'
+            and table_name in ('players', 'devices', 'link_codes', 'results')`,
+      )
+      database =
+        row.tables === 4 ? 'ok' : `reachable, but ${row.tables}/4 tables exist — run npm run migrate`
+    } catch (cause) {
+      database = (cause as Error).message
     }
 
     return json({

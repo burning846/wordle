@@ -89,6 +89,24 @@ test('health reports a working deployment', async () => {
   assert.doesNotMatch(JSON.stringify(body), /pass@|:pass/)
 })
 
+test('health answers even with no database at all', async () => {
+  setDatabase(null)
+  const saved = process.env.DATABASE_URL
+  delete process.env.DATABASE_URL
+
+  try {
+    const response = await health()
+    assert.equal(response.status, 200, 'health must answer, not fail like the other routes')
+    const body = (await response.json()) as Record<string, string | boolean>
+    assert.equal(body.ok, false)
+    assert.match(String(body.databaseUrl), /missing/)
+    assert.match(String(body.database), /DATABASE_URL is not set/)
+  } finally {
+    if (saved !== undefined) process.env.DATABASE_URL = saved
+    setDatabase({ query: async (text, params = []) => (await pg.query(text, params)).rows as never[] })
+  }
+})
+
 test('health names a database that is missing its tables', async () => {
   await pg.exec('drop table if exists results, link_codes, devices, players cascade')
   const body = (await (await health()).json()) as Record<string, string | boolean>
