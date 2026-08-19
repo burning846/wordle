@@ -3,27 +3,40 @@ import { dailyAnswer, dayIndexFor, formatCountdown, msUntilNextPuzzle, dailyNumb
 
 const daily = ['crane', 'slate', 'audio']
 
+/** An instant, written in the puzzle's own zone. */
+const at = (iso: string) => new Date(`${iso}+08:00`)
+
 test('the epoch is puzzle 1', () => {
-  assert.equal(dayIndexFor(new Date(2026, 0, 1)), 0)
-  assert.equal(dailyNumber(dayIndexFor(new Date(2026, 0, 1))), 1)
+  assert.equal(dayIndexFor(at('2026-01-01T00:00:00')), 0)
+  assert.equal(dailyNumber(dayIndexFor(at('2026-01-01T00:00:00'))), 1)
 })
 
-test('day index advances one per calendar day', () => {
-  assert.equal(dayIndexFor(new Date(2026, 0, 2)), 1)
-  assert.equal(dayIndexFor(new Date(2026, 1, 1)), 31)
+test('day index advances one per day', () => {
+  assert.equal(dayIndexFor(at('2026-01-02T00:00:00')), 1)
+  assert.equal(dayIndexFor(at('2026-02-01T00:00:00')), 31)
 })
 
-test('the time of day does not affect the index', () => {
-  assert.equal(dayIndexFor(new Date(2026, 0, 5, 0, 0, 1)), dayIndexFor(new Date(2026, 0, 5, 23, 59, 59)))
+test('the puzzle turns over at midnight UTC+8, not before', () => {
+  assert.equal(dayIndexFor(at('2026-01-05T23:59:59')), 4)
+  assert.equal(dayIndexFor(at('2026-01-06T00:00:00')), 5)
 })
 
-test('a daylight-saving boundary still advances exactly one day', () => {
-  // US DST starts 2026-03-08, making that local day 23 hours long.
-  assert.equal(dayIndexFor(new Date(2026, 2, 9)) - dayIndexFor(new Date(2026, 2, 8)), 1)
+test('the index does not depend on the machine running it', () => {
+  // The same instant, expressed in three zones: one puzzle day, whoever is asking.
+  const instant = '2026-08-20T01:30:00'
+  assert.equal(dayIndexFor(new Date(`${instant}+08:00`)), 231)
+  assert.equal(dayIndexFor(new Date(`${instant}+08:00`)), dayIndexFor(new Date('2026-08-19T17:30:00Z')))
+  assert.equal(dayIndexFor(new Date('2026-08-19T10:30:00-07:00')), 231)
+})
+
+test('daylight saving elsewhere cannot shift the day', () => {
+  // UTC+8 has none, so these days are exactly 24 hours apart whatever the runtime does.
+  assert.equal(dayIndexFor(at('2026-03-09T12:00:00')) - dayIndexFor(at('2026-03-08T12:00:00')), 1)
+  assert.equal(dayIndexFor(at('2026-11-02T12:00:00')) - dayIndexFor(at('2026-11-01T12:00:00')), 1)
 })
 
 test('dates before the epoch clamp to the first puzzle', () => {
-  assert.equal(dayIndexFor(new Date(2020, 0, 1)), 0)
+  assert.equal(dayIndexFor(at('2020-01-01T00:00:00')), 0)
 })
 
 test('answers cycle once the list runs out', () => {
@@ -37,14 +50,11 @@ test('countdown is zero padded', () => {
   assert.equal(formatCountdown(3 * 3600_000 + 4 * 60_000 + 5_000), '03:04:05')
 })
 
-test('the countdown ends at the next local midnight', () => {
-  const noon = new Date(2026, 5, 10, 12, 0, 0)
-  assert.equal(noon.getTime() + msUntilNextPuzzle(noon), new Date(2026, 5, 11).getTime())
+test('the countdown ends at the next midnight UTC+8', () => {
+  const noon = at('2026-06-10T12:00:00')
+  assert.equal(noon.getTime() + msUntilNextPuzzle(noon), at('2026-06-11T00:00:00').getTime())
 })
 
-test('the countdown follows daylight saving, not a flat 24 hours', () => {
-  // Spring forward and fall back in the America/Los_Angeles zone the tests run in:
-  // those local days are 23 and 25 hours long, so a fixed +24h would miss midnight.
-  assert.equal(msUntilNextPuzzle(new Date(2026, 2, 8)), 23 * 3600_000)
-  assert.equal(msUntilNextPuzzle(new Date(2026, 10, 1)), 25 * 3600_000)
+test('the countdown is a full day at the moment one starts', () => {
+  assert.equal(msUntilNextPuzzle(at('2026-06-10T00:00:00')), 24 * 3600_000)
 })

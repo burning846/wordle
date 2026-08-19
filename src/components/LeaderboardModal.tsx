@@ -65,8 +65,8 @@ function useLeaderboard(open: boolean, length: WordLength): State {
     let cancelled = false
     setState({ status: 'loading' })
 
-    // The player's own day, not the server's: the daily puzzle rolls over at local
-    // midnight, so a server in UTC is on yesterday's puzzle for anyone far enough east.
+    // Sent explicitly rather than left to the server's default, so the board shown is
+    // the one being played even if the two ever compute the day differently.
     void fetchLeaderboard(length, dayIndexFor())
       .then((board) => {
         if (!cancelled) setState({ status: 'ready', board })

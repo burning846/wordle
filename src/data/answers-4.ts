@@ -37,7 +37,6 @@ only
 over
 love
 mean
-said
 give
 even
 much
@@ -56,21 +55,17 @@ away
 than
 home
 last
-told
 keep
 long
 name
 ever
 feel
-made
-done
 nice
 girl
 fine
 kind
 stay
 left
-came
 hear
 same
 show
@@ -78,7 +73,6 @@ else
 kill
 next
 care
-went
 dead
 many
 mind
@@ -88,7 +82,6 @@ baby
 room
 move
 most
-seen
 live
 miss
 both
@@ -96,21 +89,17 @@ once
 head
 used
 idea
-knew
 hold
 door
 such
 also
-took
 wife
 meet
 hard
-gone
 play
 open
 hope
 face
-lost
 turn
 case
 true
@@ -120,7 +109,6 @@ year
 hand
 part
 late
-gave
 five
 shut
 easy
@@ -167,7 +155,6 @@ sort
 boss
 safe
 book
-sent
 hour
 sick
 poor
@@ -199,7 +186,6 @@ dude
 none
 pain
 pass
-kept
 wake
 busy
 kiss
@@ -207,14 +193,12 @@ ship
 sell
 dark
 ride
-born
 film
 wear
 sing
 blue
 near
 rock
-paid
 ring
 bill
 army
@@ -314,7 +298,6 @@ rose
 code
 note
 east
-held
 rule
 file
 tape
@@ -374,7 +357,6 @@ rush
 pair
 farm
 bike
-grew
 ruin
 liar
 tour
@@ -402,7 +384,6 @@ taxi
 iron
 swim
 hook
-laid
 text
 rate
 zero
@@ -415,7 +396,6 @@ boom
 fail
 cast
 thou
-woke
 warn
 dust
 tear
@@ -423,13 +403,11 @@ wise
 wolf
 rice
 drag
-hung
 goal
 sale
 cure
 rare
 wide
-blew
 mass
 dump
 rude
@@ -461,7 +439,6 @@ task
 doll
 maid
 thin
-drew
 dirt
 deny
 duke
@@ -489,7 +466,6 @@ deck
 fuel
 mile
 seal
-wore
 buck
 exit
 vice
@@ -524,7 +500,6 @@ punk
 pope
 host
 yell
-flew
 noon
 spin
 slap
@@ -551,7 +526,6 @@ soap
 corn
 tent
 bend
-sang
 tale
 heal
 bout
@@ -577,7 +551,6 @@ plot
 rage
 leak
 item
-torn
 dive
 vast
 pump
@@ -594,7 +567,6 @@ tool
 menu
 ford
 ruby
-worn
 tire
 halt
 root
@@ -660,13 +632,11 @@ lick
 plug
 reed
 hush
-fled
 bald
 seed
 deed
 mill
 mole
-rang
 heir
 tide
 dime
@@ -681,13 +651,11 @@ bent
 dock
 lawn
 pond
-tore
 hint
 leap
 leaf
 pony
 cape
-rode
 bean
 melt
 gasp
@@ -805,7 +773,6 @@ womb
 teen
 mold
 bunk
-lent
 cozy
 toll
 claw
@@ -831,7 +798,6 @@ sane
 peek
 hull
 toad
-sunk
 pact
 grim
 memo
@@ -900,7 +866,6 @@ brag
 peep
 ache
 swat
-bled
 defy
 tame
 prop
@@ -930,7 +895,6 @@ rook
 daft
 eddy
 soak
-sank
 lice
 itch
 user
@@ -999,7 +963,6 @@ mash
 rosy
 sect
 stag
-swam
 beak
 halo
 icon
@@ -1013,7 +976,6 @@ lest
 grub
 grin
 muse
-bred
 tile
 rite
 dunk
@@ -1042,11 +1004,9 @@ mink
 fret
 edgy
 swab
-spat
 reap
 morn
 stun
-spun
 neon
 snob
 ploy
@@ -1058,7 +1018,6 @@ veer
 knit
 hoot
 fern
-wept
 gall
 lobe
 rink
@@ -1100,7 +1059,6 @@ burr
 foil
 slum
 toil
-sewn
 mart
 acre
 wick
@@ -1126,7 +1084,6 @@ puny
 writ
 burp
 dual
-slid
 dole
 slop
 hark
@@ -1200,7 +1157,6 @@ glum
 deem
 tact
 scab
-lain
 moat
 lacy
 watt
@@ -1244,7 +1200,6 @@ bard
 mite
 idly
 pout
-sped
 apex
 kiwi
 pail
@@ -1298,7 +1253,6 @@ kilt
 awry
 coax
 drab
-sown
 gust
 tome
 hone
@@ -1339,7 +1293,6 @@ ajar
 noun
 gnaw
 lope
-bade
 bode
 dank
 racy
@@ -1349,7 +1302,6 @@ mull
 lyre
 skit
 husk
-trod
 leek
 maul
 prim
@@ -1401,7 +1353,6 @@ crux
 teak
 leer
 axed
-swum
 gilt
 spry
 goad
@@ -1415,7 +1366,6 @@ dote
 oust
 shod
 wane
-wove
 awed
 flue
 waxy

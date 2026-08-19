@@ -61,6 +61,34 @@ const STEM_RANK_LIMIT = 8000
 /** Informal spellings that SCOWL lists but no one wants as a puzzle answer. */
 const INFORMAL = new Set(['gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'outta', 'dunno', 'lotta'])
 
+/**
+ * Past tenses and past participles of irregular verbs. No suffix rule reaches these —
+ * that is what makes them irregular — so they are listed.
+ *
+ * Only forms whose sole reading is inflected are here. A word that also means
+ * something in its own right stays a possible answer, which is why this list has no
+ * "rose", "felt", "spoke", "ground", "found", "left", "shot", "dove" or "bore": a
+ * flower, a fabric, part of a wheel, the earth, to establish, a direction, an attempt
+ * and a bird are all base words that happen to collide with a verb form. Forms
+ * identical to their own base — "cut", "read", "cast", "burst", "spread", "beat" —
+ * are absent for the same reason.
+ */
+const IRREGULAR_FORMS = new Set(
+  `said told made done came went seen knew took gone lost gave sent kept born paid held
+   grew laid woke hung blew drew wore flew sang torn worn fled rang tore rode lent sunk
+   bled sank swam bred spat spun wept sewn slid lain sped sown bade trod swum wove
+   heard taken known given meant broke drunk spent wrote stuck stole built began threw
+   slept grown drove chose stood eaten shown blown drank begun burnt drawn swore dealt
+   sworn shook swept flown froze risen woken stung swung borne awoke shone arose woven
+   crept flung stank clung knelt slung wrung dwelt smote
+   caught bought forgot broken became gotten taught stolen hidden fought fallen spoken
+   chosen thrown beaten struck frozen driven proven sought bitten shaken strung sprung
+   ridden shrunk sprang arisen awoken beheld shrank strode bidden strove
+   brought written swollen forgave mistook forbade trodden`
+    .trim()
+    .split(/\s+/),
+)
+
 async function frequencyList() {
   if (existsSync(CACHE)) return readFileSync(CACHE, 'utf8')
   const res = await fetch(FREQUENCY_URL)
@@ -197,7 +225,11 @@ for (const length of LENGTHS) {
   // is a word the game will accept, and that dictionary is profanity-filtered while
   // the SCOWL size buckets are not.
   const eligible = [...common].filter(
-    (word) => rightLength(word) && dictionary.has(word) && !INFORMAL.has(word),
+    (word) =>
+      rightLength(word) &&
+      dictionary.has(word) &&
+      !INFORMAL.has(word) &&
+      !IRREGULAR_FORMS.has(word),
   )
   const answers = eligible
     .filter((word) => !inflectedFrom(word, isWord, { comparatives: !rank.has(word) }))

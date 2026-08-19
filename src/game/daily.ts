@@ -1,29 +1,23 @@
 /**
- * Day 1 of the daily puzzle. Everything is computed in the player's local time,
- * so the puzzle rolls over at their own midnight.
+ * The daily puzzle changes at midnight UTC+8, the same instant for everyone.
+ *
+ * Deriving the day from each player's own timezone instead would mean the browser and
+ * the API disagree for part of every day — the API runs in UTC — and a player far
+ * enough east could not submit a result at all during that window. Fixing the zone
+ * makes the day a property of the puzzle rather than of whoever is looking at it.
+ *
+ * UTC+8 observes no daylight saving, so every puzzle day is exactly 24 hours.
  */
-const EPOCH = new Date(2026, 0, 1)
+const PUZZLE_OFFSET_HOURS = 8
+
+/** Puzzle 1 begins at 2026-01-01 00:00 UTC+8. */
+const EPOCH_MS = Date.UTC(2025, 11, 31, 24 - PUZZLE_OFFSET_HOURS)
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-function midnight(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
-}
-
-/**
- * Built from the calendar date rather than by adding 24 hours: a daylight-saving
- * transition makes the local day 23 or 25 hours long.
- */
-function nextMidnight(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime()
-}
-
-/**
- * Days elapsed since the epoch; 0 on launch day. Rounded rather than floored, so a
- * 23- or 25-hour daylight-saving day still counts as exactly one day.
- */
+/** Days elapsed since the epoch; 0 on launch day. */
 export function dayIndexFor(date: Date = new Date()): number {
-  return Math.max(0, Math.round((midnight(date) - midnight(EPOCH)) / DAY_MS))
+  return Math.max(0, Math.floor((date.getTime() - EPOCH_MS) / DAY_MS))
 }
 
 /** Human-facing puzzle number. */
@@ -45,7 +39,8 @@ export function randomAnswer(pool: string[]): string {
 }
 
 export function msUntilNextPuzzle(now: Date = new Date()): number {
-  return nextMidnight(now) - now.getTime()
+  const elapsed = now.getTime() - EPOCH_MS
+  return DAY_MS - (((elapsed % DAY_MS) + DAY_MS) % DAY_MS)
 }
 
 export function formatCountdown(ms: number): string {

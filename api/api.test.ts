@@ -263,19 +263,10 @@ test('an impossibly fast game is refused', async () => {
   assert.match(((await response.json()) as { error: string }).error, /impossibly fast/)
 })
 
-test('a client a day ahead of the server is still accepted', async () => {
-  // A player in UTC+8 crosses midnight eight hours before a server in UTC does, and
-  // their result must not be refused for those eight hours.
+test("tomorrow's puzzle cannot be claimed early", async () => {
+  // The puzzle day is fixed to UTC+8, so nobody is legitimately ahead of the server.
   const player = await signUp('burning')
-  const tomorrow = dailyWin(5, 3, 60_000, dayIndexFor() + 1)
-
-  const response = await results(post('results', tomorrow, player.token))
-  assert.equal(response.status, 201, await response.clone().text())
-})
-
-test('a puzzle further ahead than any timezone allows is refused', async () => {
-  const player = await signUp('burning')
-  const submission = dailyWin(5, 3, 60_000, dayIndexFor() + 2)
+  const submission = dailyWin(5, 3, 60_000, dayIndexFor() + 1)
 
   const response = await results(post('results', submission, player.token))
   assert.equal(response.status, 422)

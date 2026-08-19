@@ -32,11 +32,11 @@ const MIN_MS_PER_GUESS = 300
 const MAX_DAYS_LATE = 2
 
 /**
- * The daily puzzle rolls over at the player's midnight, not the server's, so a client
- * east of UTC is legitimately a day ahead for part of every day. Without this slack a
- * player in UTC+8 could not submit a result for eight hours out of every twenty-four.
+ * None: the puzzle day is fixed to UTC+8, so a correct client can never be ahead of
+ * the server. A device with a wrong clock is playing the wrong puzzle anyway, and
+ * allowing any slack here would let a player onto tomorrow's leaderboard early.
  */
-const MAX_DAYS_AHEAD = 1
+const MAX_DAYS_AHEAD = 0
 
 export function validateResult(body: unknown, now: Date = new Date()): Validation {
   if (typeof body !== 'object' || body === null)

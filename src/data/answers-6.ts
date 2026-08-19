@@ -66,7 +66,6 @@ report
 choice
 finish
 during
-caught
 system
 unless
 attack
@@ -77,11 +76,9 @@ across
 lovely
 handle
 middle
-bought
 letter
 simple
 single
-forgot
 normal
 ground
 charge
@@ -92,12 +89,10 @@ killer
 church
 camera
 within
-broken
 honest
 window
 hungry
 french
-became
 accept
 lawyer
 island
@@ -145,7 +140,6 @@ corner
 faster
 fellow
 leader
-gotten
 health
 advice
 beyond
@@ -153,7 +147,6 @@ hardly
 cousin
 pardon
 career
-taught
 martin
 breath
 market
@@ -169,7 +162,6 @@ easier
 strike
 female
 ticket
-stolen
 prefer
 surely
 create
@@ -205,7 +197,6 @@ sooner
 cheese
 spring
 castle
-hidden
 artist
 forest
 barely
@@ -229,7 +220,6 @@ player
 repeat
 proper
 assume
-fought
 temple
 jacket
 switch
@@ -269,13 +259,11 @@ mostly
 junior
 silent
 borrow
-fallen
 fourth
 expert
 direct
 twenty
 series
-spoken
 victor
 button
 effort
@@ -285,7 +273,6 @@ vision
 defend
 senior
 freeze
-chosen
 shadow
 screen
 writer
@@ -296,7 +283,6 @@ design
 object
 valley
 circle
-thrown
 agency
 border
 actual
@@ -346,14 +332,12 @@ butter
 insist
 toward
 attend
-beaten
 script
 degree
 rabbit
 recent
 sacred
 motion
-struck
 inform
 gentle
 status
@@ -368,7 +352,6 @@ nephew
 miller
 outfit
 filthy
-frozen
 prayer
 behalf
 beside
@@ -414,7 +397,6 @@ supper
 liquor
 random
 active
-driven
 trauma
 safely
 serial
@@ -600,7 +582,6 @@ expose
 growth
 column
 shrink
-proven
 rarely
 resort
 versus
@@ -710,7 +691,6 @@ asylum
 ambush
 avenge
 notion
-sought
 racket
 exotic
 extent
@@ -789,7 +769,6 @@ caller
 immune
 guinea
 invent
-bitten
 aspect
 relate
 felony
@@ -844,7 +823,6 @@ carrot
 beacon
 banner
 cartel
-shaken
 vulgar
 bakery
 lowest
@@ -1144,7 +1122,6 @@ hangar
 bleach
 trader
 cavity
-strung
 opener
 entity
 wisely
@@ -1171,7 +1148,6 @@ goblin
 groovy
 sinful
 hopper
-sprung
 herald
 spleen
 pantry
@@ -1253,7 +1229,6 @@ plight
 mirage
 mortar
 rotate
-ridden
 ballot
 kosher
 sordid
@@ -1435,7 +1410,6 @@ naught
 dredge
 rabble
 corral
-shrunk
 sprout
 domino
 gunmen
@@ -1690,7 +1664,6 @@ manger
 jagged
 darken
 quiche
-sprang
 grovel
 urchin
 fondly
@@ -1865,7 +1838,6 @@ obsess
 parody
 disown
 groggy
-arisen
 advent
 siesta
 looser
@@ -2071,7 +2043,6 @@ bellow
 nobler
 whinny
 exhume
-awoken
 skewer
 redone
 prance
@@ -2131,7 +2102,6 @@ cringe
 gaiety
 thence
 bigamy
-beheld
 syntax
 sexism
 bygone
@@ -2184,7 +2154,6 @@ caddie
 jovial
 clamor
 frizzy
-shrank
 splice
 orator
 tartan
@@ -2278,7 +2247,6 @@ junket
 tariff
 angler
 pummel
-strode
 azalea
 locale
 wombat
@@ -2373,7 +2341,6 @@ bedder
 bemoan
 bemuse
 bettor
-bidden
 billow
 bisect
 bitmap
@@ -2563,7 +2530,6 @@ stanch
 stanza
 stodgy
 stolid
-strove
 stylus
 subset
 succor

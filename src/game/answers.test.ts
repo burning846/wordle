@@ -36,6 +36,29 @@ test('inflected forms are not answers', () => {
   }
 })
 
+test('irregular past tenses and participles are not answers', () => {
+  // No suffix rule reaches these, so they are listed by hand in the generator.
+  const pool = new Set(WORD_LENGTHS.flatMap(answers))
+  const forms = ['went', 'gone', 'knew', 'taken', 'wrote', 'written', 'broken', 'spoken',
+    'bought', 'brought', 'caught', 'frozen', 'stolen', 'hidden', 'begun', 'swept']
+  for (const word of forms) {
+    assert.ok(!pool.has(word), `${word} is only ever an inflected form`)
+  }
+})
+
+test('a form that is also a word in its own right is kept', () => {
+  // The rule is about meaning, not spelling: a flower, a fabric, part of a wheel, the
+  // earth and a bird are base words that happen to collide with a verb form. Words
+  // whose past tense equals their base — "read", "cast", "burst" — stay for the same
+  // reason.
+  const pool = new Set(WORD_LENGTHS.flatMap(answers))
+  const keepers = ['rose', 'felt', 'spoke', 'ground', 'found', 'left', 'shot', 'dove',
+    'bore', 'fell', 'wound', 'bound', 'read', 'cast', 'burst', 'spread', 'thought']
+  for (const word of keepers) {
+    assert.ok(pool.has(word), `${word} means something of its own and should be kept`)
+  }
+})
+
 test('words that only look inflected are kept', () => {
   // The filter strips a suffix only when a real word remains, so these must survive.
   // "cover", "offer" and "baker" additionally rely on the comparative rule staying

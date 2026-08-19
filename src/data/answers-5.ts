@@ -35,7 +35,6 @@ three
 today
 found
 woman
-heard
 ready
 happy
 haven
@@ -91,7 +90,6 @@ black
 alive
 cause
 ahead
-taken
 white
 small
 uncle
@@ -105,14 +103,12 @@ daddy
 dance
 catch
 sense
-known
 dream
 write
 voice
 sweet
 lucky
 quiet
-given
 fault
 learn
 early
@@ -128,7 +124,6 @@ class
 worse
 court
 marry
-meant
 movie
 mouth
 month
@@ -136,7 +131,6 @@ train
 seven
 hotel
 round
-broke
 frank
 table
 buddy
@@ -173,12 +167,10 @@ agent
 dress
 scene
 tough
-drunk
 share
 laugh
 smell
 often
-spent
 third
 visit
 judge
@@ -190,7 +182,6 @@ upset
 green
 store
 doubt
-wrote
 field
 south
 glass
@@ -200,7 +191,6 @@ north
 madam
 truck
 board
-stuck
 magic
 reach
 dirty
@@ -236,13 +226,11 @@ track
 above
 video
 fresh
-stole
 study
 crowd
 treat
 empty
 level
-built
 raise
 extra
 heavy
@@ -280,13 +268,11 @@ chair
 brown
 shirt
 guest
-began
 usual
 aware
 proof
 cream
 total
-threw
 birth
 noise
 focus
@@ -297,7 +283,6 @@ mayor
 staff
 split
 alarm
-slept
 enter
 brave
 model
@@ -333,7 +318,6 @@ shape
 royal
 cheap
 avoid
-grown
 giant
 scare
 china
@@ -347,11 +331,8 @@ pizza
 image
 plate
 mercy
-drove
 wound
 crack
-chose
-stood
 below
 march
 aside
@@ -389,7 +370,6 @@ wheel
 fruit
 range
 youth
-eaten
 alien
 route
 trace
@@ -455,7 +435,6 @@ crush
 noble
 gross
 skull
-shown
 print
 sauce
 grass
@@ -482,10 +461,8 @@ cliff
 forth
 fetch
 guilt
-blown
 booth
 trunk
-drank
 salad
 loyal
 mouse
@@ -512,7 +489,6 @@ shark
 sneak
 shell
 drill
-begun
 liver
 moron
 sandy
@@ -532,14 +508,12 @@ abuse
 elder
 beard
 gimme
-burnt
 upper
 shore
 lemon
 crane
 fraud
 tense
-drawn
 motor
 steak
 tooth
@@ -654,14 +628,12 @@ woody
 scent
 naive
 jolly
-swore
 bonus
 wrist
 drain
 laser
 thumb
 lobby
-dealt
 fatal
 roast
 flood
@@ -680,7 +652,6 @@ orbit
 greet
 forty
 brass
-sworn
 email
 tasty
 label
@@ -805,7 +776,6 @@ greed
 spine
 salon
 asset
-shook
 naval
 swine
 peach
@@ -813,7 +783,6 @@ crook
 grasp
 reign
 jewel
-swept
 ferry
 urban
 comet
@@ -845,7 +814,6 @@ onion
 spice
 grunt
 elbow
-flown
 alter
 filth
 agony
@@ -992,7 +960,6 @@ hound
 cloak
 macho
 fling
-froze
 mourn
 quack
 troll
@@ -1012,7 +979,6 @@ lynch
 omega
 trout
 reset
-risen
 flank
 itchy
 haste
@@ -1045,7 +1011,6 @@ vouch
 venue
 lunar
 whoop
-woken
 pluck
 surge
 sauna
@@ -1197,7 +1162,6 @@ stomp
 chime
 pouch
 bowel
-stung
 chimp
 bleak
 expel
@@ -1211,7 +1175,6 @@ giddy
 imply
 prone
 juror
-swung
 bugle
 frown
 quota
@@ -1287,7 +1250,6 @@ satin
 pence
 canon
 jiffy
-borne
 glide
 friar
 latex
@@ -1320,7 +1282,6 @@ wield
 whirl
 aspen
 lumpy
-awoke
 cubic
 gloom
 polka
@@ -1346,7 +1307,6 @@ quail
 bison
 lager
 smoky
-shone
 lapse
 plump
 brood
@@ -1373,7 +1333,6 @@ snout
 braid
 chirp
 vigil
-arose
 wring
 comma
 vinyl
@@ -1406,7 +1365,6 @@ cache
 chore
 leper
 mural
-woven
 berth
 polio
 spout
@@ -1426,10 +1384,8 @@ gable
 filly
 putty
 align
-crept
 mania
 recap
-flung
 savor
 graph
 annex
@@ -1476,7 +1432,6 @@ mangy
 forte
 ghoul
 erupt
-stank
 plumb
 voter
 taker
@@ -1584,7 +1539,6 @@ anvil
 salve
 arbor
 hinge
-clung
 motif
 debit
 sleek
@@ -1649,7 +1603,6 @@ rotor
 tabby
 dunce
 drier
-knelt
 revue
 fauna
 slink
@@ -1808,7 +1761,6 @@ genus
 facet
 tuner
 baste
-slung
 abate
 dusky
 briny
@@ -1823,7 +1775,6 @@ gulch
 deign
 undid
 droop
-wrung
 tepid
 spurn
 idiom
@@ -1910,7 +1861,6 @@ drawl
 dross
 dryly
 dully
-dwelt
 eking
 elegy
 embed
@@ -1975,7 +1925,6 @@ slake
 slosh
 slunk
 slyly
-smote
 sooty
 sprig
 staid
