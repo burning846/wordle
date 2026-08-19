@@ -12,6 +12,7 @@ import { POST as link } from './link.ts'
 import { POST as results } from './results.ts'
 import { GET as leaderboard } from './leaderboard.ts'
 import { GET as me } from './me.ts'
+import { GET as health } from './health.ts'
 
 /**
  * Runs the routes against a real Postgres compiled to WebAssembly, so the schema,
@@ -76,6 +77,25 @@ function dailyWin(length: 4 | 5 | 6 | 7, guessCount: number, durationMs = 60_000
     durationMs,
   }
 }
+
+test('health reports a working deployment', async () => {
+  process.env.DATABASE_URL ??= 'postgresql://user:pass@db.example.com/neondb'
+  const body = (await (await health()).json()) as Record<string, string | boolean>
+
+  assert.equal(body.ok, true)
+  assert.equal(body.database, 'ok')
+  assert.match(String(body.databaseUrl), /^set \(db\.example\.com\)$/)
+  // The password must never appear, since this response is meant to be pasted around.
+  assert.doesNotMatch(JSON.stringify(body), /pass@|:pass/)
+})
+
+test('health names a database that is missing its tables', async () => {
+  await pg.exec('drop table if exists results, link_codes, devices, players cascade')
+  const body = (await (await health()).json()) as Record<string, string | boolean>
+
+  assert.equal(body.ok, false)
+  assert.match(String(body.database), /0\/4 tables exist/)
+})
 
 test('a deployment with no database says so, rather than failing opaquely', async () => {
   // The state a fresh preview deploy is in before DATABASE_URL is set for it.

@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin, ViteDevServer } from 'vite'
 
 /** Route files under api/, by URL path. */
-const ROUTES = ['register', 'link', 'results', 'leaderboard', 'me'] as const
+const ROUTES = ['register', 'link', 'results', 'leaderboard', 'me', 'health'] as const
 
 type Handler = (request: Request) => Promise<Response>
 
