@@ -44,16 +44,22 @@ Statistics, settings, and in-progress boards live in `localStorage`, keyed by mo
 | File            | Contents                                                       |
 | --------------- | -------------------------------------------------------------- |
 | `guesses-N.txt` | every word accepted as a guess (12,578 at five letters)        |
-| `answers-N.txt` | the pool answers are drawn from (1,103 at five letters)        |
+| `answers-N.txt` | the pool answers are drawn from (793 at five letters)          |
 
 Guesses come from the SCOWL dictionary shipped in the `word-list` package. Answers are that
 dictionary intersected with a frequency-ranked list, so the target is always something a player has
 plausibly seen, while obscure-but-real words are still accepted as guesses.
 
-The frequency list is web-corpus derived, so answers are additionally required to appear in SCOWL's
-common-vocabulary buckets (sizes 10-35, via `wordlist-english`). Without that the pool offers up
-`texas`, `linux`, `anime` and `devel`; about a hundred such entries per length are excluded — as
-answers only, never as guesses.
+Two further filters apply to answers only, never to guesses:
+
+- The frequency list is web-corpus derived, so answers must also appear in SCOWL's
+  common-vocabulary buckets (sizes 10-35, via `wordlist-english`). Without this the pool offers up
+  `texas`, `linux`, `anime` and `devel` — about a hundred entries per length.
+- Inflected forms are dropped: plurals, `-ed` and `-ing`. A suffix is only stripped when what
+  remains is itself an everyday word, so `thing`, `bring`, `speed`, `chaos` and `focus` survive
+  while `books`, `voted` and `going` do not. Roughly a third of each pool goes this way.
+
+Plurals remain perfectly legal guesses — the point is only that the hidden word is a base form.
 
 `answers-N.txt` is ordered by everyday usage, most common word first. That single ordering does
 double duty: practice difficulty slices it into thirds, and the daily sequence is a seeded shuffle

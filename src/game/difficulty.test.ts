@@ -32,7 +32,7 @@ const realAnswers = () =>
 test('the real pools are big enough that words rarely repeat', () => {
   const answers = realAnswers()
   for (const difficulty of DIFFICULTIES) {
-    assert.ok(poolFor(answers, difficulty).length > 300, `${difficulty} tier is too small`)
+    assert.ok(poolFor(answers, difficulty).length > 200, `${difficulty} tier is too small`)
   }
 })
 
