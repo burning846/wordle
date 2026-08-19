@@ -22,7 +22,8 @@ export interface SubmittedResult {
  * puzzle actually had, every guess a real word, the outcome consistent with the
  * grid, and the clock not obviously fabricated.
  */
-export type Validation = { ok: true; result: SubmittedResult; answer: string } | { ok: false; error: string }
+export type Validation =
+  { ok: true; result: SubmittedResult; answer: string } | { ok: false; error: string }
 
 /** Nobody types a five-letter word in under a third of a second, six times over. */
 const MIN_MS_PER_GUESS = 300
@@ -31,7 +32,8 @@ const MIN_MS_PER_GUESS = 300
 const MAX_DAYS_LATE = 2
 
 export function validateResult(body: unknown, now: Date = new Date()): Validation {
-  if (typeof body !== 'object' || body === null) return { ok: false, error: 'body must be an object' }
+  if (typeof body !== 'object' || body === null)
+    return { ok: false, error: 'body must be an object' }
   const raw = body as Record<string, unknown>
 
   const mode = raw.mode
@@ -42,7 +44,11 @@ export function validateResult(body: unknown, now: Date = new Date()): Validatio
 
   const guesses = raw.guesses
   if (!Array.isArray(guesses) || guesses.length === 0) return { ok: false, error: 'no guesses' }
-  if (!guesses.every((guess) => typeof guess === 'string' && new RegExp(`^[a-z]{${length}}$`).test(guess))) {
+  if (
+    !guesses.every(
+      (guess) => typeof guess === 'string' && new RegExp(`^[a-z]{${length}}$`).test(guess),
+    )
+  ) {
     return { ok: false, error: 'malformed guess' }
   }
 
@@ -86,7 +92,8 @@ export function validateResult(body: unknown, now: Date = new Date()): Validatio
   if (!won && limit !== null && guesses.length !== limit) {
     return { ok: false, error: 'a lost game must use every guess' }
   }
-  if (guesses.slice(0, -1).includes(answer)) return { ok: false, error: 'the answer was guessed early' }
+  if (guesses.slice(0, -1).includes(answer))
+    return { ok: false, error: 'the answer was guessed early' }
   if (new Set(guesses).size !== guesses.length) return { ok: false, error: 'a guess was repeated' }
 
   const durationMs = raw.durationMs

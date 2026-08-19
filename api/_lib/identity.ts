@@ -23,7 +23,9 @@ const GROUP_SIZE = 4
 
 export function createLinkCode(): string {
   const groups = Array.from({ length: CODE_GROUPS }, () =>
-    Array.from({ length: GROUP_SIZE }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join(''),
+    Array.from({ length: GROUP_SIZE }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join(
+      '',
+    ),
   )
   return groups.join('-')
 }

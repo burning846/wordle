@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless'
+import { ConfigurationError } from './http.ts'
 
 /**
  * The narrowest database interface the routes need: parameterised SQL in, rows out.
@@ -22,7 +23,11 @@ export function getDatabase(): Database {
   if (database) return database
 
   const url = process.env.DATABASE_URL
-  if (!url) throw new Error('DATABASE_URL is not set')
+  if (!url) {
+    throw new ConfigurationError(
+      'This deployment has no database: DATABASE_URL is not set for its environment',
+    )
+  }
 
   const sql = neon(url)
   database = {

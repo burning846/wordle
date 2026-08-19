@@ -6,7 +6,7 @@ import {
   hashSecret,
   LINK_CODE_TTL_MS,
 } from './_lib/identity.ts'
-import { authenticate, error, json, readJson } from './_lib/http.ts'
+import { authenticate, error, json, readJson, route } from './_lib/http.ts'
 
 /**
  * Cross-device play without accounts.
@@ -16,25 +16,27 @@ import { authenticate, error, json, readJson } from './_lib/http.ts'
  * single-use and hashed at rest, so reading the database gives no way to take over
  * a player.
  */
-export async function POST(request: Request): Promise<Response> {
-  const db = getDatabase()
-  const body = (await readJson(request)) as { code?: unknown } | null
+export function POST(request: Request): Promise<Response> {
+  return route(async () => {
+    const db = getDatabase()
+    const body = (await readJson(request)) as { code?: unknown } | null
 
-  if (typeof body?.code === 'string' && body.code.trim() !== '') {
-    return redeem(body.code, db)
-  }
+    if (typeof body?.code === 'string' && body.code.trim() !== '') {
+      return redeem(body.code, db)
+    }
 
-  const player = await authenticate(request, db)
-  if (!player) return error('unknown device', 401)
+    const player = await authenticate(request, db)
+    if (!player) return error('unknown device', 401)
 
-  const code = createLinkCode()
-  await db.query(
-    `insert into link_codes (code_hash, player_id, expires_at)
-       values ($1, $2, now() + ($3 || ' milliseconds')::interval)`,
-    [hashLinkCode(code), player.id, String(LINK_CODE_TTL_MS)],
-  )
+    const code = createLinkCode()
+    await db.query(
+      `insert into link_codes (code_hash, player_id, expires_at)
+         values ($1, $2, now() + ($3 || ' milliseconds')::interval)`,
+      [hashLinkCode(code), player.id, String(LINK_CODE_TTL_MS)],
+    )
 
-  return json({ code, expiresInMs: LINK_CODE_TTL_MS })
+    return json({ code, expiresInMs: LINK_CODE_TTL_MS })
+  })
 }
 
 async function redeem(code: string, db: ReturnType<typeof getDatabase>): Promise<Response> {
@@ -60,5 +62,9 @@ async function redeem(code: string, db: ReturnType<typeof getDatabase>): Promise
     [claimed.player_id],
   )
 
-  return json({ playerId: claimed.player_id, nickname: player.nickname, token })
+  return json({
+    playerId: claimed.player_id,
+    nickname: player.nickname,
+    token,
+  })
 }
