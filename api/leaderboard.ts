@@ -5,6 +5,7 @@ import { isWordLength } from '../src/game/types.js'
 import type { LeaderboardRow } from '../src/game/api.js'
 
 const MAX_ROWS = 50
+const DEFAULT_ROWS = 20
 
 /**
  * The day's ranking for one word length: fewest guesses first, then fastest. Losses
@@ -22,7 +23,12 @@ export function GET(request: Request): Promise<Response> {
     const dayIndex = requested === null ? dayIndexFor() : Number(requested)
     if (!Number.isInteger(dayIndex) || dayIndex < 0) return error('invalid day index')
 
-    const limit = Math.min(Number(params.get('limit') ?? 20) || 20, MAX_ROWS)
+    // Clamped at both ends: a negative limit is a Postgres error, and an unbounded
+    // one is a public request for the whole table.
+    const requestedLimit = Number(params.get('limit') ?? DEFAULT_ROWS)
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(Math.max(Math.trunc(requestedLimit), 1), MAX_ROWS)
+      : DEFAULT_ROWS
 
     const rows = await getDatabase().query<{
       nickname: string

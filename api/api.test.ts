@@ -256,6 +256,41 @@ test('guesses have to be real words', async () => {
   assert.match(((await response.json()) as { error: string }).error, /not a word/)
 })
 
+test('a hard mode claim is checked, not taken on trust', async () => {
+  // The marker shows on the leaderboard, so a normal-mode grid must not carry it.
+  const player = await signUp('burning')
+  const words = loadWords(5)
+  const dayIndex = dayIndexFor()
+  const answer = dailyAnswer(dailyOrder(words.answers, 5), dayIndex)
+
+  // A second guess that throws away what the first revealed is not hard mode.
+  const first = words.guesses.find(
+    (word) => word !== answer && [...word].some((letter, i) => letter === answer[i]),
+  ) as string
+  const careless = words.guesses.find(
+    (word) => word !== answer && word !== first && ![...word].some((l, i) => l === first[i]),
+  ) as string
+
+  const submission = {
+    mode: 'daily',
+    length: 5,
+    difficulty: null,
+    dayIndex,
+    guesses: [first, careless, answer],
+    won: true,
+    hardMode: true,
+    durationMs: 60_000,
+  }
+
+  const response = await results(post('results', submission, player.token))
+  assert.equal(response.status, 422)
+  assert.match(((await response.json()) as { error: string }).error, /not a hard mode game/)
+
+  // The same grid is fine once it stops claiming hard mode.
+  const honest = await results(post('results', { ...submission, hardMode: false }, player.token))
+  assert.equal(honest.status, 201, await honest.clone().text())
+})
+
 test('an impossibly fast game is refused', async () => {
   const player = await signUp('burning')
   const response = await results(post('results', dailyWin(5, 4, 100), player.token))
@@ -319,6 +354,24 @@ test('the leaderboard ranks by guesses, then by time', async () => {
       [3, 'slow'],
     ],
   )
+})
+
+test('a malformed limit does not reach the database', async () => {
+  // LIMIT -1 is a Postgres error, and this route is public.
+  for (const limit of ['-1', '0', 'abc', '1e9', '']) {
+    const response = await leaderboard(get(`leaderboard?length=5&limit=${limit}`))
+    assert.equal(response.status, 200, `limit=${limit} should not fail`)
+  }
+})
+
+test('the leaderboard never returns more rows than it caps', async () => {
+  const player = await signUp('burning')
+  await results(post('results', dailyWin(5, 3), player.token))
+
+  const body = (await (
+    await leaderboard(get('leaderboard?length=5&limit=9999'))
+  ).json()) as { entries: unknown[] }
+  assert.ok(body.entries.length <= 50)
 })
 
 test('the leaderboard keeps lengths and days apart', async () => {

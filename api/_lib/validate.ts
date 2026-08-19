@@ -1,5 +1,6 @@
 import { dailyAnswer, dayIndexFor } from '../../src/game/daily.js'
 import { poolFor, isDifficulty, type Difficulty } from '../../src/game/difficulty.js'
+import { hardModeViolation } from '../../src/game/evaluate.js'
 import { dailyOrder } from '../../src/game/shuffle.js'
 import { loadWords } from '../../src/game/words.js'
 import { isWordLength, limitFor, type GameMode, type WordLength } from '../../src/game/types.js'
@@ -105,6 +106,16 @@ export function validateResult(body: unknown, now: Date = new Date()): Validatio
     return { ok: false, error: 'the answer was guessed early' }
   if (new Set(guesses).size !== guesses.length) return { ok: false, error: 'a guess was repeated' }
 
+  // The hard-mode marker appears on the leaderboard, so it is checked rather than
+  // taken on trust: every guess must honour the hints the ones before it revealed.
+  const hardMode = raw.hardMode === true
+  if (hardMode) {
+    for (let i = 1; i < guesses.length; i++) {
+      const violation = hardModeViolation(guesses[i], guesses.slice(0, i), answer)
+      if (violation) return { ok: false, error: `not a hard mode game: ${violation.toLowerCase()}` }
+    }
+  }
+
   const durationMs = raw.durationMs
   if (durationMs !== null && durationMs !== undefined) {
     if (typeof durationMs !== 'number' || !Number.isFinite(durationMs) || durationMs < 0) {
@@ -125,7 +136,7 @@ export function validateResult(body: unknown, now: Date = new Date()): Validatio
       dayIndex,
       guesses: guesses as string[],
       won,
-      hardMode: raw.hardMode === true,
+      hardMode,
       durationMs: typeof durationMs === 'number' ? Math.round(durationMs) : null,
     },
   }

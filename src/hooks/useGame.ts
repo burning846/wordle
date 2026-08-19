@@ -154,10 +154,14 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
 
   /**
    * When the current game's first letter was typed, for the leaderboard's tie-break.
-   * Deliberately not persisted: a resumed game reports no time rather than a wrong
-   * one, and the server treats a missing time as unranked-by-speed.
+   * Deliberately not persisted, so a game resumed from storage reports no time at all
+   * rather than a wrong one: the server treats a missing time as unranked by speed,
+   * while a partial one would look like an impossibly fast solve.
    */
   const startedAtRef = useRef<number | null>(null)
+
+  /** Set when a board is restored mid-game, which is what makes it untimeable. */
+  const untimedRef = useRef(false)
 
   // Held in a ref so a new callback identity never re-runs the effects below.
   const onFinishRef = useRef(onFinish)
@@ -210,6 +214,8 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
       if (cancelled) return
       dictionaryRef.current = dictionary
       const started = startGame(dictionary, puzzle)
+      // Guesses already on the board mean the clock for this game is long gone.
+      untimedRef.current = started.guesses.length > 0
       setSnapshot(started)
       // A resumed game re-seeds its row, so greens survive a refresh.
       setDraftTo(seededDraft(started))
@@ -249,6 +255,8 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
 
       removeKey(gameKey(puzzle))
       setSnapshot(startGame(dictionary, puzzle))
+      startedAtRef.current = null
+      untimedRef.current = false
       setDraftTo(emptyDraft(length))
       setRevealingRow(-1)
       setShake(NO_SHAKE)
@@ -339,7 +347,7 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
 
       if (/^[a-zA-Z]$/.test(key)) {
         // The clock starts on the first letter of the game, not on page load.
-        startedAtRef.current ??= Date.now()
+        if (!untimedRef.current) startedAtRef.current ??= Date.now()
         setDraftTo(typeIntoDraft(draftRef.current, key.toLowerCase()))
       }
     },
@@ -352,6 +360,7 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
 
     window.clearTimeout(revealTimer.current)
     startedAtRef.current = null
+    untimedRef.current = false
     removeKey(gameKey(puzzle))
     setSnapshot({
       answer: randomAnswer(poolFor(dictionary.ranked, puzzle.difficulty)),
