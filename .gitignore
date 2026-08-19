@@ -16,6 +16,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Development database created by the dev-api Vite plugin.
+.pglite
+
 # Downloaded frequency list; the generated word data in src/data is committed.
 scripts/.cache
 

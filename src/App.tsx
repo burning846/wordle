@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Board } from './components/Board.tsx'
 import { Header } from './components/Header.tsx'
 import { HelpModal } from './components/HelpModal.tsx'
@@ -7,11 +7,14 @@ import { SettingsModal } from './components/SettingsModal.tsx'
 import { StatsModal } from './components/StatsModal.tsx'
 import { Toast } from './components/Toast.tsx'
 import { Toolbar } from './components/Toolbar.tsx'
+import { AccountModal } from './components/AccountModal.tsx'
+import { LeaderboardModal } from './components/LeaderboardModal.tsx'
 import { dayIndexFor, dailyNumber } from './game/daily.ts'
 import { DIFFICULTY_LABELS, type Difficulty } from './game/difficulty.ts'
 import { loadSettings, saveSettings, type Settings } from './game/settings.ts'
 import { readJson, writeJson } from './game/storage.ts'
 import type { GameMode, Puzzle, WordLength } from './game/types.ts'
+import { useAccount } from './hooks/useAccount.ts'
 import { useGame } from './hooks/useGame.ts'
 import './App.css'
 
@@ -21,6 +24,19 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const [helpOpen, setHelpOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false)
+
+  // A toast is the only channel the account code has to reach the player, and useGame
+  // owns it — so the message is queued here and handed over once the game exists.
+  const [pendingToast, setPendingToast] = useState<string | null>(null)
+  const notifyRef = useRef<((message: string) => void) | null>(null)
+  const notify = useCallback((message: string) => {
+    if (notifyRef.current) notifyRef.current(message)
+    else setPendingToast(message)
+  }, [])
+
+  const account = useAccount(notify)
 
   // Memoised so the hook's effects key off the board's contents, not its identity.
   const puzzle = useMemo<Puzzle>(
@@ -28,7 +44,15 @@ export default function App() {
     [settings.mode, settings.length, settings.difficulty],
   )
 
-  const game = useGame({ puzzle, hardMode: settings.hardMode })
+  const game = useGame({ puzzle, hardMode: settings.hardMode, onFinish: account.sync })
+
+  notifyRef.current = game.notify
+
+  useEffect(() => {
+    if (pendingToast === null) return
+    game.notify(pendingToast)
+    setPendingToast(null)
+  }, [pendingToast, game])
 
   const { press, snapshot, resultOpen } = game
 
@@ -54,7 +78,7 @@ export default function App() {
     }
   }, [])
 
-  const modalOpen = helpOpen || settingsOpen || resultOpen
+  const modalOpen = helpOpen || settingsOpen || resultOpen || accountOpen || leaderboardOpen
 
   useEffect(() => {
     if (modalOpen) return
@@ -91,8 +115,10 @@ export default function App() {
     <div className="app">
       <Header
         subtitle={subtitle}
+        nickname={account.account?.nickname ?? null}
         onHelp={() => setHelpOpen(true)}
         onStats={game.openResult}
+        onAccount={() => setAccountOpen(true)}
         onSettings={() => setSettingsOpen(true)}
       />
 
@@ -158,7 +184,25 @@ export default function App() {
         hardMode={settings.hardMode}
         highContrast={settings.highContrast}
         onNewWord={game.newPracticeGame}
+        onLeaderboard={() => {
+          game.closeResult()
+          setLeaderboardOpen(true)
+        }}
         notify={game.notify}
+      />
+
+      <AccountModal
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        account={account}
+        notify={notify}
+      />
+
+      <LeaderboardModal
+        open={leaderboardOpen}
+        onClose={() => setLeaderboardOpen(false)}
+        length={settings.length}
+        nickname={account.account?.nickname ?? null}
       />
     </div>
   )

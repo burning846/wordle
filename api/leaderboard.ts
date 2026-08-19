@@ -2,16 +2,9 @@ import { getDatabase } from './_lib/db.ts'
 import { dayIndexFor } from '../src/game/daily.ts'
 import { error, json } from './_lib/http.ts'
 import { isWordLength } from '../src/game/types.ts'
+import type { LeaderboardRow } from '../src/game/api.ts'
 
 const MAX_ROWS = 50
-
-export interface LeaderboardRow {
-  rank: number
-  nickname: string
-  guessCount: number
-  durationMs: number | null
-  hardMode: boolean
-}
 
 /**
  * The day's ranking for one word length: fewest guesses first, then fastest. Losses

@@ -87,9 +87,22 @@ export interface Shake {
 
 const NO_SHAKE: Shake = { row: -1, token: 0 }
 
+/** A finished game, in the shape the API accepts. */
+export interface FinishedGame {
+  puzzle: Puzzle
+  dayIndex: number | null
+  guesses: string[]
+  won: boolean
+  hardMode: boolean
+  /** Null when the game was resumed from storage, since the clock is lost with it. */
+  durationMs: number | null
+}
+
 export interface GameOptions {
   puzzle: Puzzle
   hardMode: boolean
+  /** Called once, when a game ends — used to sync the result to a player account. */
+  onFinish?: (game: FinishedGame) => void
 }
 
 export interface Game {
@@ -116,7 +129,7 @@ export interface Game {
   notify: (message: string) => void
 }
 
-export function useGame({ puzzle, hardMode }: GameOptions): Game {
+export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
   const { mode, length } = puzzle
 
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null)
@@ -138,6 +151,17 @@ export function useGame({ puzzle, hardMode }: GameOptions): Game {
    * as it stood one keystroke ago.
    */
   const draftRef = useRef<Draft>(emptyDraft(length))
+
+  /**
+   * When the current game's first letter was typed, for the leaderboard's tie-break.
+   * Deliberately not persisted: a resumed game reports no time rather than a wrong
+   * one, and the server treats a missing time as unranked-by-speed.
+   */
+  const startedAtRef = useRef<number | null>(null)
+
+  // Held in a ref so a new callback identity never re-runs the effects below.
+  const onFinishRef = useRef(onFinish)
+  onFinishRef.current = onFinish
 
   const setDraftTo = useCallback((value: Draft) => {
     draftRef.current = value
@@ -177,6 +201,7 @@ export function useGame({ puzzle, hardMode }: GameOptions): Game {
     setSnapshot(null)
     setDraftTo(emptyDraft(length))
     setRevealingRow(-1)
+    startedAtRef.current = null
     setShake(NO_SHAKE)
     setResultOpen(false)
     setStats(loadStats(puzzle))
@@ -281,6 +306,16 @@ export function useGame({ puzzle, hardMode }: GameOptions): Game {
     // Recorded here rather than in an effect so a resumed finished game is never counted twice.
     if (status !== 'playing') {
       setStats(recordResult(puzzle, { won, guessCount: guesses.length, dayIndex: snapshot.dayIndex }))
+      const startedAt = startedAtRef.current
+      startedAtRef.current = null
+      onFinishRef.current?.({
+        puzzle,
+        dayIndex: snapshot.dayIndex,
+        guesses,
+        won,
+        hardMode,
+        durationMs: startedAt === null ? null : Date.now() - startedAt,
+      })
     }
 
     // Hold the verdict until the tiles have finished flipping.
@@ -303,6 +338,8 @@ export function useGame({ puzzle, hardMode }: GameOptions): Game {
       if (key === 'Backspace') return setDraftTo(backspaceDraft(draftRef.current))
 
       if (/^[a-zA-Z]$/.test(key)) {
+        // The clock starts on the first letter of the game, not on page load.
+        startedAtRef.current ??= Date.now()
         setDraftTo(typeIntoDraft(draftRef.current, key.toLowerCase()))
       }
     },
@@ -314,6 +351,7 @@ export function useGame({ puzzle, hardMode }: GameOptions): Game {
     if (!dictionary) return
 
     window.clearTimeout(revealTimer.current)
+    startedAtRef.current = null
     removeKey(gameKey(puzzle))
     setSnapshot({
       answer: randomAnswer(poolFor(dictionary.ranked, puzzle.difficulty)),

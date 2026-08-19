@@ -1,30 +1,8 @@
 import { getDatabase } from './_lib/db.ts'
 import { authenticate, error, json } from './_lib/http.ts'
+import type { HistoryEntry, Totals } from '../src/game/api.ts'
 
 const HISTORY_LIMIT = 60
-
-export interface HistoryEntry {
-  mode: 'daily' | 'practice'
-  length: number
-  difficulty: string | null
-  dayIndex: number | null
-  answer: string
-  guesses: string[]
-  won: boolean
-  hardMode: boolean
-  durationMs: number | null
-  playedAt: string
-}
-
-export interface Totals {
-  mode: 'daily' | 'practice'
-  length: number
-  difficulty: string | null
-  played: number
-  won: number
-  bestGuessCount: number | null
-  averageGuessCount: number | null
-}
 
 /**
  * Everything the player's own history page needs: who they are, their totals per
