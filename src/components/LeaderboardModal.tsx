@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchLeaderboard, ApiUnavailable, type Leaderboard } from '../game/api.js'
-import { dailyNumber } from '../game/daily.js'
+import { dailyNumber, dayIndexFor } from '../game/daily.js'
 import type { WordLength } from '../game/types.js'
 import { Modal } from './Modal.js'
 import './LeaderboardModal.css'
@@ -65,7 +65,9 @@ function useLeaderboard(open: boolean, length: WordLength): State {
     let cancelled = false
     setState({ status: 'loading' })
 
-    void fetchLeaderboard(length)
+    // The player's own day, not the server's: the daily puzzle rolls over at local
+    // midnight, so a server in UTC is on yesterday's puzzle for anyone far enough east.
+    void fetchLeaderboard(length, dayIndexFor())
       .then((board) => {
         if (!cancelled) setState({ status: 'ready', board })
       })

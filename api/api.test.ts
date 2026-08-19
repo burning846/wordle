@@ -59,10 +59,15 @@ async function signUp(nickname: string) {
   }
 }
 
-/** A winning daily submission for today, solved in `guessCount` guesses. */
-function dailyWin(length: 4 | 5 | 6 | 7, guessCount: number, durationMs = 60_000) {
+/** A winning daily submission, solved in `guessCount` guesses. */
+function dailyWin(
+  length: 4 | 5 | 6 | 7,
+  guessCount: number,
+  durationMs = 60_000,
+  // Each day has its own word, so a submission for another day needs that day's answer.
+  dayIndex = dayIndexFor(),
+) {
   const words = loadWords(length)
-  const dayIndex = dayIndexFor()
   const answer = dailyAnswer(dailyOrder(words.answers, length), dayIndex)
   const fillers = words.guesses.filter((word) => word !== answer).slice(0, guessCount - 1)
   return {
@@ -258,9 +263,19 @@ test('an impossibly fast game is refused', async () => {
   assert.match(((await response.json()) as { error: string }).error, /impossibly fast/)
 })
 
-test('a future puzzle cannot be submitted', async () => {
+test('a client a day ahead of the server is still accepted', async () => {
+  // A player in UTC+8 crosses midnight eight hours before a server in UTC does, and
+  // their result must not be refused for those eight hours.
   const player = await signUp('burning')
-  const submission = { ...dailyWin(5, 3), dayIndex: dayIndexFor() + 1 }
+  const tomorrow = dailyWin(5, 3, 60_000, dayIndexFor() + 1)
+
+  const response = await results(post('results', tomorrow, player.token))
+  assert.equal(response.status, 201, await response.clone().text())
+})
+
+test('a puzzle further ahead than any timezone allows is refused', async () => {
+  const player = await signUp('burning')
+  const submission = dailyWin(5, 3, 60_000, dayIndexFor() + 2)
 
   const response = await results(post('results', submission, player.token))
   assert.equal(response.status, 422)

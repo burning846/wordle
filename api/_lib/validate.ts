@@ -31,6 +31,13 @@ const MIN_MS_PER_GUESS = 300
 /** How far back a result may be submitted, so an old device can still sync up. */
 const MAX_DAYS_LATE = 2
 
+/**
+ * The daily puzzle rolls over at the player's midnight, not the server's, so a client
+ * east of UTC is legitimately a day ahead for part of every day. Without this slack a
+ * player in UTC+8 could not submit a result for eight hours out of every twenty-four.
+ */
+const MAX_DAYS_AHEAD = 1
+
 export function validateResult(body: unknown, now: Date = new Date()): Validation {
   if (typeof body !== 'object' || body === null)
     return { ok: false, error: 'body must be an object' }
@@ -71,7 +78,9 @@ export function validateResult(body: unknown, now: Date = new Date()): Validatio
     }
     dayIndex = raw.dayIndex
     const today = dayIndexFor(now)
-    if (dayIndex > today) return { ok: false, error: 'that puzzle has not been published yet' }
+    if (dayIndex > today + MAX_DAYS_AHEAD) {
+      return { ok: false, error: 'that puzzle has not been published yet' }
+    }
     if (dayIndex < today - MAX_DAYS_LATE) return { ok: false, error: 'that puzzle has closed' }
 
     answer = dailyAnswer(dailyOrder(words.answers, length), dayIndex)

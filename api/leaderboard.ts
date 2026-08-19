@@ -16,6 +16,8 @@ export function GET(request: Request): Promise<Response> {
     const length = Number(params.get('length') ?? 5)
     if (!isWordLength(length)) return error('unsupported word length')
 
+    // Clients pass their own day, since the puzzle rolls over at each player's local
+    // midnight; the server's date is only a fallback.
     const requested = params.get('dayIndex')
     const dayIndex = requested === null ? dayIndexFor() : Number(requested)
     if (!Number.isInteger(dayIndex) || dayIndex < 0) return error('invalid day index')
