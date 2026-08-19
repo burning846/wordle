@@ -96,8 +96,11 @@ export class ApiUnavailable extends Error {
   readonly status: number | undefined
 
   constructor(status?: number) {
+    // 200 with HTML is the ordinary "no API here" case: the SPA fallback answered
+    // /api/* with index.html. Any other status means something is actually wrong.
+    const missing = status === undefined || status === 200 || status === 404
     super(
-      status === undefined || status === 404
+      missing
         ? 'Player accounts are not available on this deployment'
         : `The server returned ${status} instead of JSON — the API may be misconfigured`,
     )
@@ -129,10 +132,28 @@ async function call<T>(path: string, init: RequestInit = {}, token?: string): Pr
     throw new ApiUnavailable(response.status)
   }
 
-  if (!response.ok) {
-    throw new ApiError((body as { error?: string }).error ?? `request failed (${response.status})`)
-  }
+  if (!response.ok) throw new ApiError(messageFrom(body, response.status))
   return body as T
+}
+
+/**
+ * Our own routes answer with `{ error: string }`, but anything in front of them may
+ * not: Vercel's deployment protection, for one, returns `{ error: { message, code } }`
+ * and would otherwise surface as "[object Object]".
+ */
+function messageFrom(body: unknown, status: number): string {
+  const error = (body as { error?: unknown }).error
+
+  if (typeof error === 'string') return error
+  if (typeof error === 'object' && error !== null) {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string') {
+      return status === 401 && message === 'Protected deployment'
+        ? 'This preview deployment is password-protected by Vercel'
+        : message
+    }
+  }
+  return `request failed (${status})`
 }
 
 export function registerPlayer(nickname: string): Promise<Account> {
