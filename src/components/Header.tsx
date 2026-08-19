@@ -2,12 +2,15 @@ import './Header.css'
 
 interface HeaderProps {
   subtitle: string
+  /** Shown on the player button when signed in. */
+  nickname: string | null
   onHelp: () => void
   onStats: () => void
+  onAccount: () => void
   onSettings: () => void
 }
 
-export function Header({ subtitle, onHelp, onStats, onSettings }: HeaderProps) {
+export function Header({ subtitle, nickname, onHelp, onStats, onAccount, onSettings }: HeaderProps) {
   return (
     <header className="header">
       <button type="button" className="icon-button" onClick={onHelp} aria-label="How to play">
@@ -24,6 +27,18 @@ export function Header({ subtitle, onHelp, onStats, onSettings }: HeaderProps) {
       </div>
 
       <div className="header__actions">
+        <button
+          type="button"
+          className={`icon-button${nickname ? ' is-active' : ''}`}
+          onClick={onAccount}
+          aria-label={nickname ? `Player: ${nickname}` : 'Sign in'}
+          title={nickname ?? 'Player'}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.4" />
+            <path d="M5 20a7 7 0 0 1 14 0" />
+          </svg>
+        </button>
         <button type="button" className="icon-button" onClick={onStats} aria-label="Statistics">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M5 20V11M12 20V4M19 20v-6" />

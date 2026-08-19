@@ -30,3 +30,15 @@ export function shuffled<T>(items: readonly T[], seed: number): T[] {
 
   return out
 }
+
+/**
+ * Seed for the daily sequence. Offset per length so the four sequences are
+ * uncorrelated. Both the browser and the API derive the daily word from this, so it
+ * lives in one place: if the two ever disagreed, the server would reject the very
+ * results it had handed out.
+ */
+const DAILY_SEED_BASE = 0x5eed
+
+export function dailyOrder(ranked: readonly string[], length: number): string[] {
+  return shuffled(ranked, DAILY_SEED_BASE + length)
+}

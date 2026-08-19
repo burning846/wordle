@@ -1,5 +1,3 @@
-import type { Dictionary } from './dictionary.ts'
-
 /**
  * Day 1 of the daily puzzle. Everything is computed in the player's local time,
  * so the puzzle rolls over at their own midnight.
@@ -34,12 +32,11 @@ export function dailyNumber(dayIndex: number): number {
 }
 
 /**
- * The word for a given day. The daily order is a seeded shuffle of the answer pool,
- * so walking it gives an unpredictable sequence, and the modulo keeps the game
- * playable past the end of the list.
+ * The word for a given day, from a pool already in daily order (see `dailyOrder`).
+ * The modulo keeps the game playable past the end of the list.
  */
-export function dailyAnswer(dictionary: Dictionary, dayIndex: number): string {
-  return dictionary.daily[dayIndex % dictionary.daily.length]
+export function dailyAnswer(daily: readonly string[], dayIndex: number): string {
+  return daily[dayIndex % daily.length]
 }
 
 /** Practice draws from whichever difficulty tier is selected. */

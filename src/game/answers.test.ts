@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
+import { loadWords } from './words.ts'
 import { WORD_LENGTHS, type WordLength } from './types.ts'
 
-/** The committed word lists, read straight from disk rather than through Vite. */
-const read = (name: string) =>
-  readFileSync(new URL(`../data/${name}.txt`, import.meta.url), 'utf8').split('\n').filter(Boolean)
-
-const answers = (length: WordLength) => read(`answers-${length}`)
-const guesses = (length: WordLength) => new Set(read(`guesses-${length}`))
+const answers = (length: WordLength) => loadWords(length).answers
+const guesses = (length: WordLength) => new Set(loadWords(length).guesses)
 
 test('every answer is also an accepted guess', () => {
   for (const length of WORD_LENGTHS) {

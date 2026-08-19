@@ -59,3 +59,8 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Marks the player button when a player is signed in on this device. */
+.icon-button.is-active {
+  color: var(--color-correct);
+}

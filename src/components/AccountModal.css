@@ -1,0 +1,172 @@
+.account__lead {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.account__form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.account__form--divided {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.account__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.account__row {
+  display: flex;
+  gap: 8px;
+}
+
+.account__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.account__input--code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account__row .button {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.account__identity {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account__nickname {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.account__signout {
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.account__link {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account__code {
+  display: block;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 4px;
+  background: var(--color-hover);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  user-select: all;
+}
+
+.account__heading {
+  margin: 18px 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.account__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.account__totals {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.account__totals th {
+  padding-bottom: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.account__totals th:first-child,
+.account__totals td:first-child {
+  text-align: left;
+}
+
+.account__totals td {
+  padding: 4px 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--color-border);
+}
+
+.account__dim {
+  color: var(--color-muted);
+}
+
+.account__history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+
+.account__history li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  padding: 4px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.account__word {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}

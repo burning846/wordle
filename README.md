@@ -7,10 +7,14 @@ switchable word length from 4 to 7 letters.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm test         # game logic tests
+npm run dev      # http://localhost:5173, API included
+npm test         # game logic and API tests
 npm run build    # typecheck + production build into dist/
 ```
+
+`npm run dev` also serves the `api/` routes, backed by a Postgres compiled to WebAssembly and kept
+in `.pglite/`. Nothing to provision: the player system works locally out of the box, running the
+same route modules that Vercel runs.
 
 ## Gameplay
 
@@ -36,7 +40,34 @@ npm run build    # typecheck + production build into dist/
   rounds.
 - **High contrast** — orange/blue tiles instead of green/yellow.
 
-Statistics, settings, and in-progress boards live in `localStorage`, keyed by mode and length.
+Statistics, settings, and in-progress boards live in `localStorage`, keyed by mode, length and
+difficulty. Signing in as a player additionally syncs finished games to the server.
+
+## Players
+
+There are no passwords. Registering a nickname mints a token that this browser keeps and sends as a
+bearer credential; only its hash is stored, so a leaked database hands out no working credentials.
+
+A token in one browser is invisible to another, so cross-device play goes through a **link code**: the
+device you already use issues a short-lived, single-use code, and entering it on a second device
+binds that device to the same player. Both then hold their own token.
+
+Finished games are replayed server-side before being stored. The client scores its own guesses — the
+answer is in its bundle — so this cannot prove anyone played fairly. What it does reject is anything
+incoherent: a word that was not that puzzle's answer, a guess that is not a real word, an outcome
+that disagrees with the grid, a puzzle not yet published, a practice answer from a difficulty other
+than the one claimed, or a solve faster than the keystrokes would take.
+
+| Route              | Purpose                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `POST /api/register`    | Create a player and bind this device                     |
+| `POST /api/link`        | Issue a link code, or redeem one on a second device      |
+| `POST /api/results`     | Submit a finished game, after server-side validation      |
+| `GET /api/leaderboard`  | The day's ranking: fewest guesses, then fastest           |
+| `GET /api/me`           | The caller's own totals and recent games                  |
+
+Everything degrades quietly. With no player, or no database behind the deployment, the game is
+exactly the offline game it was in v1.
 
 ## Word lists
 
@@ -93,10 +124,20 @@ src/components/           board, keyboard, modals
 
 ## Deploying
 
-Configured for Vercel via `vercel.json` (Vite preset, `dist` output). Import the repository at
-[vercel.com/new](https://vercel.com/new) and it builds with no further setup, or from the CLI:
+Configured for Vercel via `vercel.json` (Vite preset, `dist` output, `api/` served as functions).
+Import the repository at [vercel.com/new](https://vercel.com/new), or from the CLI:
 
 ```bash
 npx vercel        # preview
 npx vercel --prod # production
 ```
+
+The player system needs a Postgres database. Add Neon from the project's Storage tab, which sets
+`DATABASE_URL`, then create the tables once:
+
+```bash
+DATABASE_URL='...' npm run migrate
+```
+
+`api/_lib/schema.sql` is written to be re-runnable, so this is safe to repeat after a deploy. Without
+`DATABASE_URL` the game still deploys and plays; only the player routes are unavailable.

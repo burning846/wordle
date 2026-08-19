@@ -1,4 +1,4 @@
-import { shuffled } from './shuffle.ts'
+import { dailyOrder } from './shuffle.ts'
 import type { WordLength } from './types.ts'
 
 export interface Dictionary {
@@ -17,10 +17,10 @@ export interface Dictionary {
  * 5 letters never downloads the 265KB 7-letter list.
  */
 const SOURCES: Record<WordLength, () => Promise<[string, string]>> = {
-  4: () => load(import('../data/answers-4.txt?raw'), import('../data/guesses-4.txt?raw')),
-  5: () => load(import('../data/answers-5.txt?raw'), import('../data/guesses-5.txt?raw')),
-  6: () => load(import('../data/answers-6.txt?raw'), import('../data/guesses-6.txt?raw')),
-  7: () => load(import('../data/answers-7.txt?raw'), import('../data/guesses-7.txt?raw')),
+  4: () => load(import('../data/answers-4.ts'), import('../data/guesses-4.ts')),
+  5: () => load(import('../data/answers-5.ts'), import('../data/guesses-5.ts')),
+  6: () => load(import('../data/answers-6.ts'), import('../data/guesses-6.ts')),
+  7: () => load(import('../data/answers-7.ts'), import('../data/guesses-7.ts')),
 }
 
 type RawModule = Promise<{ default: string }>
@@ -41,8 +41,7 @@ export function loadDictionary(length: WordLength): Promise<Dictionary> {
     const dictionary: Dictionary = {
       length,
       ranked,
-      // A distinct seed per length keeps the daily sequences uncorrelated.
-      daily: shuffled(ranked, 0x5eed + length),
+      daily: dailyOrder(ranked, length),
       // Answers are already a subset of the dictionary, but union them anyway so
       // a regenerated list can never reject a word the game itself might pick.
       guesses: new Set([...split(rawGuesses), ...ranked]),

@@ -18,6 +18,7 @@ interface StatsModalProps {
   hardMode: boolean
   highContrast: boolean
   onNewWord: () => void
+  onLeaderboard: () => void
   notify: (message: string) => void
 }
 
@@ -32,6 +33,7 @@ export function StatsModal({
   hardMode,
   highContrast,
   onNewWord,
+  onLeaderboard,
   notify,
 }: StatsModalProps) {
   const finished = snapshot !== null && snapshot.status !== 'playing'
@@ -114,13 +116,19 @@ export function StatsModal({
         </div>
       )}
 
+      {finished && mode === 'daily' && (
+        <div className="stats__next">
+          <span>Next word</span>
+          <strong>{countdown}</strong>
+        </div>
+      )}
+
       {finished && (
         <div className="stats__footer">
           {mode === 'daily' ? (
-            <div className="stats__next">
-              <span>Next word</span>
-              <strong>{countdown}</strong>
-            </div>
+            <button type="button" className="button button--ghost" onClick={onLeaderboard}>
+              Leaderboard
+            </button>
           ) : (
             <button
               type="button"
