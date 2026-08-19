@@ -87,10 +87,21 @@ export function forgetAccount(): void {
 /** Thrown when the API is reachable but declined the request. */
 export class ApiError extends Error {}
 
-/** Thrown when there is no API at all — a local build, or a deploy without a database. */
+/**
+ * Thrown when the API is missing or answered with something that is not JSON — a
+ * local build, a deploy without the routes, or a crashing function. Carries the
+ * status so a broken deployment can be told apart from one that simply has no API.
+ */
 export class ApiUnavailable extends Error {
-  constructor() {
-    super('Player accounts are not available on this deployment')
+  readonly status: number | undefined
+
+  constructor(status?: number) {
+    super(
+      status === undefined || status === 404
+        ? 'Player accounts are not available on this deployment'
+        : `The server returned ${status} instead of JSON — the API may be misconfigured`,
+    )
+    this.status = status
   }
 }
 
@@ -115,7 +126,7 @@ async function call<T>(path: string, init: RequestInit = {}, token?: string): Pr
     body = JSON.parse(text)
   } catch {
     // A deployment without the API serves the SPA's index.html for /api/* too.
-    throw new ApiUnavailable()
+    throw new ApiUnavailable(response.status)
   }
 
   if (!response.ok) {
