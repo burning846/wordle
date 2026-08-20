@@ -25,6 +25,11 @@
   color: var(--color-muted);
 }
 
+.account__hint--warn {
+  margin: 8px 0 0;
+  color: var(--color-present);
+}
+
 .account__label {
   margin: 0;
   font-size: 0.72rem;

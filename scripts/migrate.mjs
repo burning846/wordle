@@ -9,7 +9,9 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import { neon } from '@neondatabase/serverless'
-import { splitStatements } from '../api/_lib/schema.js'
+// The .ts extension, unlike everywhere else: this script is run by node directly,
+// which resolves the real file rather than the one TypeScript would emit.
+import { splitStatements } from '../api/_lib/schema.ts'
 
 // Convenience for local runs: .env is gitignored, so the connection string can live
 // there instead of being retyped. A real environment variable still wins.
@@ -35,7 +37,22 @@ const sql = neon(url)
 const statements = splitStatements(schema)
 
 for (const statement of statements) {
-  await sql.query(statement)
+  try {
+    await sql.query(statement)
+  } catch (cause) {
+    if (/players_nickname_unique/.test(statement)) {
+      const clashes = await sql.query(
+        `select lower(nickname) as name, count(*)::int as players
+           from players group by 1 having count(*) > 1 order by 2 desc`,
+      )
+      console.error(
+        `\n✗ Nicknames are not unique yet, so the index cannot be created.\n` +
+          clashes.map((row) => `    "${row.name}" is used by ${row.players} players`).join('\n') +
+          '\n  Rename or merge those players, then run this again.\n',
+      )
+    }
+    throw cause
+  }
   console.log('✓', statement.split('\n')[0].slice(0, 70))
 }
 

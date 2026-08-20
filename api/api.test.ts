@@ -171,6 +171,42 @@ test('a nickname is required and bounded', async () => {
   }
 })
 
+test('a nickname can only be taken once', async () => {
+  await signUp('burning')
+
+  const again = await register(post('register', { nickname: 'burning' }))
+  assert.equal(again.status, 409)
+  assert.match(((await again.json()) as { error: string }).error, /is taken/)
+})
+
+test('nicknames collide regardless of case or spacing', async () => {
+  await signUp('Word Smith')
+
+  for (const nickname of ['word smith', 'WORD SMITH', '  Word  Smith  ']) {
+    const response = await register(post('register', { nickname }))
+    assert.equal(response.status, 409, `${JSON.stringify(nickname)} should collide`)
+  }
+
+  // A different name is still free.
+  assert.equal((await register(post('register', { nickname: 'Wordsmith' }))).status, 201)
+})
+
+test('the spelling a player chose is the one that is kept', async () => {
+  const player = await signUp('BurNing')
+  const body = (await (await me(get('me', player.token))).json()) as {
+    player: { nickname: string }
+  }
+  assert.equal(body.player.nickname, 'BurNing')
+})
+
+test('a taken nickname does not leave a stray device behind', async () => {
+  await signUp('burning')
+  await register(post('register', { nickname: 'burning' }))
+
+  const devices = await pg.query<{ n: number }>('select count(*)::int as n from devices')
+  assert.equal(devices.rows[0].n, 1, 'the rejected registration must not have bound a device')
+})
+
 test('an unknown token is rejected', async () => {
   assert.equal((await me(get('me', 'not-a-real-token'))).status, 401)
   assert.equal((await me(get('me'))).status, 401)

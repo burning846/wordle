@@ -28,14 +28,34 @@ export function devApi(): Plugin {
       const { PGlite } = await import('@electric-sql/pglite')
       // Kept on disk under .pglite so players and results survive a restart.
       const database = await PGlite.create('.pglite')
-      await database.exec(readFileSync(new URL('../api/_lib/schema.sql', import.meta.url), 'utf8'))
-
-      const { setDatabase } = (await server.ssrLoadModule('/api/_lib/db.ts')) as {
-        setDatabase: (db: { query: (text: string, params?: unknown[]) => Promise<unknown[]> }) => void
+      try {
+        await database.exec(readFileSync(new URL('../api/_lib/schema.sql', import.meta.url), 'utf8'))
+      } catch (cause) {
+        // Usually a new constraint that the accumulated development data violates.
+        // Worth saying loudly, but not worth refusing to serve the game over.
+        server.config.logger.warn(
+          `  ➜  API:      schema not applied — ${(cause as Error).message}\n` +
+            '             delete .pglite to start the development database over',
+        )
       }
-      setDatabase({
-        query: async (text, params = []) => (await database.query(text, params as never[])).rows,
-      })
+
+      const connection = {
+        query: async (text: string, params: unknown[] = []) =>
+          (await database.query(text, params as never[])).rows,
+      }
+
+      /**
+       * Re-injected on every request rather than once at start-up. Editing anything in
+       * the API's import graph makes Vite rebuild those modules, and the fresh copy of
+       * db.ts has no database — which used to look like a deployment with DATABASE_URL
+       * missing until the server was restarted.
+       */
+      const connect = async () => {
+        const { setDatabase } = (await server.ssrLoadModule('/api/_lib/db.ts')) as {
+          setDatabase: (db: typeof connection) => void
+        }
+        setDatabase(connection)
+      }
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
         const path = (req.url ?? '').split('?')[0]
@@ -43,6 +63,7 @@ export function devApi(): Plugin {
         if (!name || !ROUTES.includes(name as (typeof ROUTES)[number])) return next()
 
         try {
+          await connect()
           const module = (await server.ssrLoadModule(`/api/${name}.ts`)) as Record<string, Handler>
           const handler = module[req.method ?? 'GET']
           if (!handler) {

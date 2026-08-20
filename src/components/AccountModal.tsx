@@ -79,6 +79,7 @@ function RedeemForm({
 /** Registration, or joining a player who already exists on another device. */
 function SignedOut({ account }: { account: AccountApi }) {
   const [nickname, setNickname] = useState('')
+  const [taken, setTaken] = useState<string | null>(null)
 
   return (
     <>
@@ -91,7 +92,10 @@ function SignedOut({ account }: { account: AccountApi }) {
         className="account__form"
         onSubmit={(event) => {
           event.preventDefault()
-          void account.register(nickname.trim()).catch(() => undefined)
+          const wanted = nickname.trim()
+          // Remembered so the field can say which name was refused, even after the
+          // toast has gone.
+          void account.register(wanted).catch(() => setTaken(wanted))
         }}
       >
         <label className="account__label" htmlFor="nickname">
@@ -102,7 +106,10 @@ function SignedOut({ account }: { account: AccountApi }) {
             id="nickname"
             className="account__input"
             value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
+            onChange={(event) => {
+              setNickname(event.target.value)
+              setTaken(null)
+            }}
             maxLength={20}
             placeholder="up to 20 characters"
             autoComplete="off"
@@ -115,6 +122,12 @@ function SignedOut({ account }: { account: AccountApi }) {
             Create
           </button>
         </div>
+        {taken !== null && taken === nickname.trim() && (
+          <p className="account__hint account__hint--warn">
+            Someone is already playing as “{taken}”. Pick another name, or link this device
+            to that player with a code from it.
+          </p>
+        )}
       </form>
 
       <div className="account__form--divided">

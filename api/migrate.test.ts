@@ -8,9 +8,14 @@ const schema = readFileSync(new URL('./_lib/schema.sql', import.meta.url), 'utf8
 test('every statement in the schema survives the split', () => {
   const statements = splitStatements(schema)
   const created = statements.filter((statement) => /^create /i.test(statement))
-  // Four tables and four indexes. A splitter that drops a statement leaves the
-  // migration silently incomplete, which is only discovered against a real database.
-  assert.equal(created.length, 8, statements.map((s) => s.split('\n')[0]).join('\n'))
+
+  // Counted from the file rather than written down here, so adding a table cannot
+  // make this pass by moving the goalposts. A splitter that drops a statement leaves
+  // the migration silently incomplete, which is only discovered against a real
+  // database.
+  const inSource = (schema.replace(/--.*$/gm, '').match(/^\s*create /gim) ?? []).length
+  assert.equal(created.length, inSource, statements.map((s) => s.split('\n')[0]).join('\n'))
+  assert.ok(created.length >= 8, 'the schema should still have its four tables and indexes')
 })
 
 test('the migration builds the schema one statement at a time', async () => {

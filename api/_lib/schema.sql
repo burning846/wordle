@@ -8,6 +8,11 @@ create table if not exists players (
   last_seen_at timestamptz not null default now()
 );
 
+-- Nicknames are one per player, compared without regard to case: two people called
+-- "Burning" and "burning" are indistinguishable on a leaderboard, which is the whole
+-- reason a name has to be unique. The stored spelling is whatever was typed.
+create unique index if not exists players_nickname_unique on players (lower(nickname));
+
 -- One row per device bound to a player. Only the hash is stored: a leaked database
 -- must not hand out working credentials, and the raw token is shown once, to its own
 -- device, and never again.

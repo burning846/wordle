@@ -12,6 +12,20 @@ export interface Database {
   query<Row>(text: string, params?: unknown[]): Promise<Row[]>
 }
 
+/** Postgres's unique_violation. Both drivers surface it on the error object. */
+const UNIQUE_VIOLATION = '23505'
+
+export function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ((error as { code?: unknown }).code === UNIQUE_VIOLATION ||
+      // PGlite reports it on a cause, and both spell it out in the message.
+      (error as { cause?: { code?: unknown } }).cause?.code === UNIQUE_VIOLATION ||
+      /duplicate key value/i.test(String((error as { message?: unknown }).message ?? '')))
+  )
+}
+
 let database: Database | null = null
 
 /** Tests inject their own Postgres here. */
