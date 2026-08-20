@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import {
   ApiUnavailable,
+  fetchProfile,
   forgetAccount,
   loadAccount,
   redeemLinkCode,
@@ -10,6 +11,7 @@ import {
   type Account,
   type SubmittedResult,
 } from '../game/api.js'
+import { adoptFinishedDailies } from '../game/sync.js'
 import type { FinishedGame } from './useGame.js'
 
 export interface AccountApi {
@@ -21,6 +23,8 @@ export interface AccountApi {
   signOut: () => void
   /** Fire-and-forget: a failed sync must never interrupt play. */
   sync: (game: FinishedGame) => void
+  /** Pulls dailies finished on other devices onto this one; resolves to how many. */
+  pull: () => Promise<number>
 }
 
 /**
@@ -71,6 +75,17 @@ export function useAccount(notify: (message: string) => void): AccountApi {
     notify('Signed out on this device')
   }, [notify])
 
+  const pull = useCallback(async () => {
+    if (!account) return 0
+    try {
+      const profile = await fetchProfile(account.token)
+      return adoptFinishedDailies(profile.history)
+    } catch {
+      // A device that cannot reach the server just plays on with what it has.
+      return 0
+    }
+  }, [account])
+
   const sync = useCallback(
     (game: FinishedGame) => {
       if (!account) return
@@ -96,5 +111,5 @@ export function useAccount(notify: (message: string) => void): AccountApi {
     [account, notify],
   )
 
-  return { account, busy, register, redeem, signOut, sync }
+  return { account, busy, register, redeem, signOut, sync, pull }
 }

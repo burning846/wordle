@@ -126,6 +126,8 @@ export interface Game {
   openResult: () => void
   press: (key: string) => void
   newPracticeGame: () => void
+  /** Re-reads the board from storage, after a sync has written a finished game there. */
+  reload: () => void
   notify: (message: string) => void
 }
 
@@ -139,6 +141,7 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
   const [toast, setToast] = useState<string | null>(null)
   const [stats, setStats] = useState<Stats>(() => loadStats(puzzle))
   const [resultOpen, setResultOpen] = useState(false)
+  const [revision, setRevision] = useState(0)
 
   const dictionaryRef = useRef<Dictionary | null>(null)
   const snapshotRef = useRef<GameSnapshot | null>(null)
@@ -225,7 +228,7 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
       cancelled = true
       window.clearTimeout(revealTimer.current)
     }
-  }, [puzzle, length, seededDraft, setDraftTo])
+  }, [puzzle, length, revision, seededDraft, setDraftTo])
 
   useEffect(() => {
     // Mirrored for the rollover check below, which runs from timers and listeners
@@ -412,6 +415,7 @@ export function useGame({ puzzle, hardMode, onFinish }: GameOptions): Game {
     openResult: useCallback(() => setResultOpen(true), []),
     press,
     newPracticeGame,
+    reload: useCallback(() => setRevision((current) => current + 1), []),
     notify,
   }
 }

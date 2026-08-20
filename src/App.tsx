@@ -48,6 +48,22 @@ export default function App() {
 
   notifyRef.current = game.notify
 
+  const { pull } = account
+  const { reload } = game
+  const playerId = account.account?.playerId
+
+  /**
+   * Adopt dailies finished on the player's other devices. Runs whenever the player
+   * changes — which covers both signing in and linking — so a freshly linked device
+   * does not offer a puzzle that has already been played and would be discarded.
+   */
+  useEffect(() => {
+    if (!playerId) return
+    void pull().then((adopted) => {
+      if (adopted > 0) reload()
+    })
+  }, [playerId, pull, reload])
+
   useEffect(() => {
     if (pendingToast === null) return
     game.notify(pendingToast)
