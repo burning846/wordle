@@ -203,7 +203,29 @@ test('a link code works only once', async () => {
   const { code } = (await (await link(post('link', {}, player.token))).json()) as { code: string }
 
   assert.equal((await link(post('link', { code }))).status, 200)
-  assert.equal((await link(post('link', { code }))).status, 400)
+  assert.equal((await link(post('link', { code }))).status, 409)
+})
+
+test('a redemption failure says which of the three things went wrong', async () => {
+  const player = await signUp('burning')
+
+  const unknown = await link(post('link', { code: 'AAAA-BBBB-CCCC' }))
+  assert.equal(unknown.status, 404)
+  assert.match(((await unknown.json()) as { error: string }).error, /No code like that/)
+
+  const { code } = (await (await link(post('link', {}, player.token))).json()) as { code: string }
+  await link(post('link', { code }))
+  const reused = await link(post('link', { code }))
+  assert.equal(reused.status, 409)
+  assert.match(((await reused.json()) as { error: string }).error, /already been used/)
+
+  const { code: stale } = (await (
+    await link(post('link', {}, player.token))
+  ).json()) as { code: string }
+  await pg.exec("update link_codes set expires_at = now() - interval '1 minute' where used_at is null")
+  const expired = await link(post('link', { code: stale }))
+  assert.equal(expired.status, 410)
+  assert.match(((await expired.json()) as { error: string }).error, /expired/)
 })
 
 test('an expired link code is refused', async () => {
@@ -213,7 +235,7 @@ test('an expired link code is refused', async () => {
 
   const { code } = (await (await link(post('link', {}, player.token))).json()) as { code: string }
   await pg.exec("update link_codes set expires_at = now() - interval '1 minute'")
-  assert.equal((await link(post('link', { code }))).status, 400)
+  assert.equal((await link(post('link', { code }))).status, 410)
 })
 
 test('a valid daily result is stored', async () => {

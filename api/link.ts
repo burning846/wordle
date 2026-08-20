@@ -49,7 +49,19 @@ async function redeem(code: string, db: ReturnType<typeof getDatabase>): Promise
     [hashLinkCode(code)],
   )
 
-  if (!claimed) return error('that code is wrong, used, or expired', 400)
+  if (!claimed) {
+    // Only asked once the claim has failed, so the happy path stays a single
+    // statement and two devices cannot both win the same code.
+    const [found] = await db.query<{ used: boolean; expired: boolean }>(
+      `select used_at is not null as used, expires_at <= now() as expired
+         from link_codes where code_hash = $1`,
+      [hashLinkCode(code)],
+    )
+
+    if (!found) return error('No code like that. Check the spelling, or make a new one.', 404)
+    if (found.used) return error('That code has already been used. Make a new one.', 409)
+    return error('That code has expired. Make a new one on your other device.', 410)
+  }
 
   const token = createToken()
   await db.query('insert into devices (token_hash, player_id) values ($1, $2)', [

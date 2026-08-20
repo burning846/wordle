@@ -46,4 +46,9 @@ export function secretsMatch(a: string, b: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right)
 }
 
-export const LINK_CODE_TTL_MS = 10 * 60 * 1000
+/**
+ * Long enough to fetch the other device and type twelve characters. The code is
+ * twelve characters from a thirty-symbol alphabet — about 59 bits — so the window
+ * length is not what protects it.
+ */
+export const LINK_CODE_TTL_MS = 30 * 60 * 1000

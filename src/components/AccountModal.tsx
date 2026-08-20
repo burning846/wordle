@@ -25,10 +25,60 @@ export function AccountModal({ open, onClose, account, notify }: AccountModalPro
   )
 }
 
+/**
+ * Entering a code issued elsewhere. Offered signed in as well as signed out: a device
+ * that already registered its own player has no other way to join an existing one,
+ * and doing so is exactly how two accidental players get merged into one.
+ */
+function RedeemForm({
+  account,
+  label,
+  hint,
+}: {
+  account: AccountApi
+  label: string
+  hint?: string
+}) {
+  const [code, setCode] = useState('')
+
+  return (
+    <form
+      className="account__form"
+      onSubmit={(event) => {
+        event.preventDefault()
+        void account.redeem(code.trim()).catch(() => undefined)
+      }}
+    >
+      <label className="account__label" htmlFor="code">
+        {label}
+      </label>
+      {hint && <p className="account__hint">{hint}</p>}
+      <div className="account__row">
+        <input
+          id="code"
+          className="account__input account__input--code"
+          value={code}
+          onChange={(event) => setCode(event.target.value)}
+          placeholder="XXXX-XXXX-XXXX"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+        />
+        <button
+          type="submit"
+          className="button button--ghost"
+          disabled={account.busy || code.trim() === ''}
+        >
+          Link
+        </button>
+      </div>
+    </form>
+  )
+}
+
 /** Registration, or joining a player who already exists on another device. */
 function SignedOut({ account }: { account: AccountApi }) {
   const [nickname, setNickname] = useState('')
-  const [code, setCode] = useState('')
 
   return (
     <>
@@ -67,34 +117,9 @@ function SignedOut({ account }: { account: AccountApi }) {
         </div>
       </form>
 
-      <form
-        className="account__form account__form--divided"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void account.redeem(code.trim()).catch(() => undefined)
-        }}
-      >
-        <label className="account__label" htmlFor="code">
-          Already playing on another device?
-        </label>
-        <div className="account__row">
-          <input
-            id="code"
-            className="account__input account__input--code"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            placeholder="XXXX-XXXX-XXXX"
-            autoComplete="off"
-          />
-          <button
-            type="submit"
-            className="button button--ghost"
-            disabled={account.busy || code.trim() === ''}
-          >
-            Link
-          </button>
-        </div>
-      </form>
+      <div className="account__form--divided">
+        <RedeemForm account={account} label="Already playing on another device?" />
+      </div>
     </>
   )
 }
@@ -108,7 +133,8 @@ function SignedIn({
   open: boolean
   notify: (message: string) => void
 }) {
-  const [code, setCode] = useState<string | null>(null)
+  const [issued, setIssued] = useState<{ code: string; expiresAt: number } | null>(null)
+  const remaining = useCountdown(issued?.expiresAt ?? null)
   const profile = useProfile(open, account.account?.token)
 
   return (
@@ -121,10 +147,17 @@ function SignedIn({
       </div>
 
       <div className="account__link">
-        {code ? (
+        {issued && remaining ? (
           <>
-            <p className="account__label">Enter this on your other device, within 10 minutes:</p>
-            <code className="account__code">{code}</code>
+            <p className="account__label">
+              Enter this on your other device{remaining.expired ? '' : `, within ${remaining.label}`}:
+            </p>
+            <code className="account__code">{issued.code}</code>
+            {remaining.expired && (
+              <p className="account__hint">
+                This code has expired. Make another one when the other device is ready.
+              </p>
+            )}
           </>
         ) : (
           <button
@@ -135,7 +168,7 @@ function SignedIn({
               const token = account.account?.token
               if (!token) return
               void requestLinkCode(token)
-                .then((issued) => setCode(issued.code))
+                .then((next) => setIssued({ code: next.code, expiresAt: Date.now() + next.expiresInMs }))
                 .catch((error: unknown) =>
                   notify(error instanceof Error ? error.message : 'Could not make a code'),
                 )
@@ -144,6 +177,14 @@ function SignedIn({
             Link another device
           </button>
         )}
+      </div>
+
+      <div className="account__form--divided">
+        <RedeemForm
+          account={account}
+          label="Joining a player from another device?"
+          hint={`This device would stop being ${account.account?.nickname} and join them instead.`}
+        />
       </div>
 
       <h3 className="account__heading">Record</h3>
@@ -199,6 +240,34 @@ function SignedIn({
       )}
     </>
   )
+}
+
+interface Countdown {
+  label: string
+  expired: boolean
+}
+
+/** Counts a link code down to its expiry, so nobody walks off with a stale one. */
+function useCountdown(expiresAt: number | null): Countdown | null {
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (expiresAt === null) return
+    setNow(Date.now())
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [expiresAt])
+
+  if (expiresAt === null) return null
+
+  const left = Math.max(0, expiresAt - now)
+  const minutes = Math.floor(left / 60_000)
+  const seconds = Math.floor((left % 60_000) / 1000)
+
+  return {
+    expired: left === 0,
+    label: minutes > 0 ? `${minutes}:${String(seconds).padStart(2, '0')}` : `${seconds}s`,
+  }
 }
 
 /** Loads the profile each time the dialog opens, so it never shows stale totals. */

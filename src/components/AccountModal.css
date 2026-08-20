@@ -13,8 +13,16 @@
 }
 
 .account__form--divided {
+  margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
+}
+
+.account__hint {
+  margin: 0 0 6px;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--color-muted);
 }
 
 .account__label {
